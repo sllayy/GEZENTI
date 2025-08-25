@@ -1,3 +1,4 @@
+using GeZenti.Api.Services;
 using GeziRotasi.API.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -8,6 +9,11 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddHttpClient();
 builder.Services.AddScoped<OsmService>();
 // PoiService kaydý buradan kaldýrýldý, çünkü o dosya henüz yok.
+
+builder.Services.AddHttpClient<IRouteService, RouteService>(c =>
+{
+    c.Timeout = TimeSpan.FromSeconds(20);
+});
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
