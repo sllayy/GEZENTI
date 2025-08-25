@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace GeziRotasi.API.Models // Namespace'i kendi projenize göre güncelledim.
+namespace GeziRotasi.API.Dtos // Namespace'i kendi projenize göre güncelledim.
 {
     // Gelen ana JSON cevabını karşılayacak sınıf
     public class OverpassResponse

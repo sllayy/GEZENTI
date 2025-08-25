@@ -1,4 +1,4 @@
-﻿using GeziRotasi.API.Models; // Namespace'i kendi projenize göre güncelledim.
+﻿using GeziRotasi.API.Dtos;
 using System.Globalization;
 using System.Net.Http.Json;
 
