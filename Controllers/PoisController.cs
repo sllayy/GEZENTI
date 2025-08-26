@@ -1,4 +1,4 @@
-﻿using GeziRotasi.API.Models;
+using GeziRotasi.API.Models;
 using GeziRotasi.API.Services;
 using Microsoft.AspNetCore.Mvc;
 
