@@ -1,0 +1,112 @@
+[
+  {
+    "ContainingType": "GeziRotasi.API.Controllers.PoisController",
+    "Method": "GetPois",
+    "RelativePath": "api/Pois",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "GeziRotasi.API.Controllers.PoisController",
+    "Method": "CreatePoi",
+    "RelativePath": "api/Pois",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "newPoi",
+        "Type": "GeziRotasi.API.Models.Poi",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "GeziRotasi.API.Controllers.PoisController",
+    "Method": "GetPoiById",
+    "RelativePath": "api/Pois/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "GeziRotasi.API.Controllers.PoisController",
+    "Method": "UpdatePoi",
+    "RelativePath": "api/Pois/{id}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "updatedPoi",
+        "Type": "GeziRotasi.API.Models.Poi",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "GeziRotasi.API.Controllers.PoisController",
+    "Method": "DeletePoi",
+    "RelativePath": "api/Pois/{id}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "GeziRotasi.API.Controllers.PoisController",
+    "Method": "SearchNearbyPlaces",
+    "RelativePath": "api/Pois/search-nearby",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "lat",
+        "Type": "System.Double",
+        "IsRequired": false
+      },
+      {
+        "Name": "lon",
+        "Type": "System.Double",
+        "IsRequired": false
+      },
+      {
+        "Name": "type",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "radius",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  }
+]
