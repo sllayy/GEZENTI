@@ -1,28 +1,28 @@
-﻿using GeziRotasi.API.Dtos;
+using GeziRotasi.API.Dtos; // Namespace'i kendi projenle eşleşmiyorsa güncelle.
 using System.Globalization;
 using System.Net.Http.Json;
 
-namespace GeziRotasi.API.Services // Namespace'i kendi projenize göre güncelledim.
+namespace GeziRotasi.API.Services // Namespace'i kendi projenle eşleşmiyorsa güncelle.
 {
     public class OsmService
     {
         private readonly IHttpClientFactory _httpClientFactory;
 
-        // Constructor: Bu servis oluşturulduğunda ona bir HttpClientFactory verilecek.
+        // Constructor: .NET'in HttpClient'ı yönetmesi için IHttpClientFactory'i alır.
         public OsmService(IHttpClientFactory httpClientFactory)
         {
             _httpClientFactory = httpClientFactory;
         }
 
+        // --- BU METOT ZATEN VARDI, DEĞİŞİKLİK YOK ---
+        // Yakındaki yerleri aramak için kullanılır.
         public async Task<OverpassResponse> GetPlacesAsync(double latitude, double longitude, string placeType, int radius = 1000)
         {
-            // --- KESİN ÇÖZÜM: KÜLTÜR (NOKTA/VİRGÜL) PROBLEMİNİ GİDERME ---
-            // Sayıları, her zaman nokta kullanacak şekilde metne çeviriyoruz.
+            // Sayıları API'nin anlayacağı formata (noktalı) çevirir.
             string latStr = latitude.ToString(CultureInfo.InvariantCulture);
             string lonStr = longitude.ToString(CultureInfo.InvariantCulture);
 
-            // Sorgu metnini, virgül yerine nokta kullandığından emin olduğumuz bu yeni metinlerle oluşturuyoruz.
-            // Ayrıca isteğin takılıp kalmaması için bir timeout ekledik.
+            // Overpass API'ye gönderilecek sorgu metni.
             var overpassQuery = $@"
                 [out:json][timeout:25];
                 (
@@ -37,25 +37,49 @@ namespace GeziRotasi.API.Services // Namespace'i kendi projenize göre güncelle
             var client = _httpClientFactory.CreateClient();
             var overpassApiUrl = "https://overpass-api.de/api/interpreter";
 
-            // Veriyi "data" anahtarıyla, API'nin beklediği formatta hazırlıyoruz.
-            var formData = new[]
+            // Sorguyu API'nin beklediği formatta hazırla.
+            var content = new FormUrlEncodedContent(new[]
             {
                 new KeyValuePair<string, string>("data", overpassQuery)
-            };
-            var content = new FormUrlEncodedContent(formData);
+            });
 
-            // API'ye isteği gönderiyoruz.
             var response = await client.PostAsync(overpassApiUrl, content);
+            response.EnsureSuccessStatusCode(); // Hata varsa burada program durur.
 
-            // Bu satır artık hata vermeyecek.
+            // Gelen JSON cevabını C# nesnelerine çevir.
+            var result = await response.Content.ReadFromJsonAsync<OverpassResponse>();
+            return result;
+        }
+
+        // --- YENİ EKLENEN METOT BURASI ---
+        // Tek bir mekanın ID'sini kullanarak detaylarını getirmek için kullanılır.
+        public async Task<OsmElement> GetPlaceDetailsAsync(long elementId)
+        {
+            var client = _httpClientFactory.CreateClient();
+            var overpassApiUrl = "https://overpass-api.de/api/interpreter";
+
+            // Overpass Sorgusu: Sadece belirtilen ID'ye sahip olan elemanı (node veya way) getirir.
+            var overpassQuery = $@"
+                [out:json];
+                (
+                  node({elementId});
+                  way({elementId});
+                );
+                out body;
+            ";
+
+            var content = new FormUrlEncodedContent(new[]
+            {
+                new KeyValuePair<string, string>("data", overpassQuery)
+            });
+
+            var response = await client.PostAsync(overpassApiUrl, content);
             response.EnsureSuccessStatusCode();
 
-            // Gelen JSON'ı C# nesnelerine çeviriyoruz.
             var result = await response.Content.ReadFromJsonAsync<OverpassResponse>();
 
-            return result;
+            // API'den gelen cevapta bir eleman varsa onu döndürür, yoksa null döner.
+            return result?.Elements.FirstOrDefault();
         }
     }
 }
-
-// --- BİTİŞ --- KOPYALAMAYI BURADA BİTİR
