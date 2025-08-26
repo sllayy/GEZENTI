@@ -21,9 +21,9 @@ const Navbar = () => {
                 <div className="flex justify-between items-center h-16">
                     {/* Logo */}
                     <Link to="/" className="flex items-center space-x-2">
-                        <img src="/LOGO.png" alt="GeziRota Logo" className="h-10 w-10" />
+                        <img src="/LOGO2.png" alt="Gezenti Logo" className="h-10 w-10" />
                         <span className="text-xl font-bold text-blue-600">
-                            GeziRota
+                            Gezenti
                         </span>
                     </Link>
 
@@ -51,9 +51,9 @@ const Navbar = () => {
                                 <Avatar image="/placeholder-user.jpg" shape="circle" size="large" />
                             </div>
                         ) : (
-                            <div className="flex items-center space-x-2">
-                                <Button label="Giriş Yap" className="p-button-text p-button-sm" />
-                                <Button label="Kayıt Ol" className="p-button-sm" />
+                            <div className="flex items-center space-x-5">
+                                <Button label="Giriş Yap" className="p-button-text p-button-sm font-bold" />
+                                <Button label="Kayıt Ol" className="bg-blue-400 text-black font-bold  border-2  hover:bg-blue-500 rounded-lg p-button-sm px-4 py-2" />
                             </div>
                         )}
                     </div>
