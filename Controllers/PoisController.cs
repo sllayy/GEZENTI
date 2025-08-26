@@ -3,7 +3,7 @@ using GeziRotasi.API.Models;
 using GeziRotasi.API.Services;
 using System.Threading.Tasks;
 using System;
-using System.Linq; // .Any() metodu için gerekli
+using System.Linq;
 
 namespace GeziRotasi.API.Controllers
 {
@@ -11,17 +11,18 @@ namespace GeziRotasi.API.Controllers
     [Route("api/[controller]")]
     public class PoisController : ControllerBase
     {
-        private readonly PoiService _poiService;
+        // Artık Controller'da veri listesi yok!
+        private readonly PoiService _poiService; // Sadece PoiService'i tanıyor
         private readonly OsmService _osmService;
 
+        // Constructor artık iki servisi de istiyor
         public PoisController(PoiService poiService, OsmService osmService)
         {
             _poiService = poiService;
             _osmService = osmService;
         }
 
-        // --- TEMEL CRUD OPERASYONLARI ---
-
+        // Tüm metotlar artık çok daha kısa ve temiz!
         [HttpGet]
         public IActionResult GetPois()
         {
@@ -65,8 +66,7 @@ namespace GeziRotasi.API.Controllers
             return NoContent();
         }
 
-        // --- OSM ENTEGRASYONLARI ---
-
+        // --- SENA'NIN KODUNUN ENTEGRE EDİLDİĞİ BÖLÜM (Değişiklik Yok) ---
         [HttpGet("search-nearby")]
         public async Task<IActionResult> SearchNearbyPlaces([FromQuery] double lat, [FromQuery] double lon, [FromQuery] string type, [FromQuery] int radius = 1000)
         {
@@ -85,7 +85,6 @@ namespace GeziRotasi.API.Controllers
                 return StatusCode(500, "Mekanlar aranırken sunucuda bir hata oluştu.");
             }
         }
-
         [HttpPost("import-from-osm")]
         public async Task<IActionResult> ImportFromOsm([FromQuery] long osmId)
         {
@@ -95,14 +94,13 @@ namespace GeziRotasi.API.Controllers
                 {
                     return Conflict("Bu mekan zaten sisteme eklenmiş.");
                 }
-                
-                // Sena'nın OsmService'inde GetPlaceDetailsAsync metodu olmalı
+
                 var osmElement = await _osmService.GetPlaceDetailsAsync(osmId);
                 if (osmElement == null)
                 {
                     return NotFound($"OSM'de {osmId} ID'li mekan bulunamadı.");
                 }
-                
+
                 var createdPoi = _poiService.ImportFromOsm(osmElement);
 
                 return CreatedAtAction(nameof(GetPoiById), new { id = createdPoi.Id }, createdPoi);
