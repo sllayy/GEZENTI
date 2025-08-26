@@ -1,7 +1,7 @@
 ﻿using GeZenti.Api.Dtos;
 using GeZenti.Api.Services;
 using Microsoft.AspNetCore.Mvc;
-
+//conflict test
 namespace GeZenti.Api.Controllers
 {
     [ApiController]
