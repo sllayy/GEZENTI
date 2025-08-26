@@ -1,6 +1,9 @@
+using Microsoft.AspNetCore.Mvc;
 using GeziRotasi.API.Models;
 using GeziRotasi.API.Services;
-using Microsoft.AspNetCore.Mvc;
+using System.Threading.Tasks;
+using System;
+using System.Linq; // .Any() metodu için gerekli
 
 namespace GeziRotasi.API.Controllers
 {
@@ -17,70 +20,97 @@ namespace GeziRotasi.API.Controllers
             _osmService = osmService;
         }
 
-        // --- SENİN TEMİZ CRUD METOTLARIN (DEĞİŞİKLİK YOK) ---
+        // --- TEMEL CRUD OPERASYONLARI ---
+
         [HttpGet]
-        public IActionResult GetPois() => Ok(_poiService.GetAllPois());
+        public IActionResult GetPois()
+        {
+            return Ok(_poiService.GetAllPois());
+        }
 
         [HttpGet("{id}")]
         public IActionResult GetPoiById(int id)
         {
-            // ... (senin kodun) ...
+            var poi = _poiService.GetPoiById(id);
+            if (poi == null) return NotFound();
+            return Ok(poi);
         }
 
         [HttpPost]
         public IActionResult CreatePoi([FromBody] Poi newPoi)
         {
-            // ... (senin kodun) ...
+            var createdPoi = _poiService.CreatePoi(newPoi);
+            return CreatedAtAction(nameof(GetPoiById), new { id = createdPoi.Id }, createdPoi);
         }
 
         [HttpPut("{id}")]
         public IActionResult UpdatePoi(int id, [FromBody] Poi updatedPoi)
         {
-            // ... (senin kodun) ...
+            if (id != updatedPoi.Id) return BadRequest("URL ID'si ile gövde ID'si eşleşmiyor.");
+
+            var existingPoi = _poiService.GetPoiById(id);
+            if (existingPoi == null) return NotFound();
+
+            _poiService.UpdatePoi(updatedPoi);
+            return NoContent();
         }
 
         [HttpDelete("{id}")]
         public IActionResult DeletePoi(int id)
         {
-            // ... (senin kodun) ...
-        }
-        
-        // --- SENA'NIN MEVCUT ÖZELLİĞİ (DEĞİŞİKLİK YOK) ---
-        [HttpGet("search-nearby")]
-        public async Task<IActionResult> SearchNearbyPlaces([FromQuery] double lat, /*...*/)
-        {
-            // ... (senin kodunla aynı) ...
+            var existingPoi = _poiService.GetPoiById(id);
+            if (existingPoi == null) return NotFound();
+
+            _poiService.DeletePoi(id);
+            return NoContent();
         }
 
-        // --- SENA'NIN YENİ ÖZELLİĞİ (YENİ YAPIYA UYGUN HALE GETİRİLDİ) ---
+        // --- OSM ENTEGRASYONLARI ---
+
+        [HttpGet("search-nearby")]
+        public async Task<IActionResult> SearchNearbyPlaces([FromQuery] double lat, [FromQuery] double lon, [FromQuery] string type, [FromQuery] int radius = 1000)
+        {
+            try
+            {
+                var places = await _osmService.GetPlacesAsync(lat, lon, type, radius);
+                if (places == null || !places.Elements.Any())
+                {
+                    return NotFound("Belirtilen kriterlere uygun mekan bulunamadı.");
+                }
+                return Ok(places);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Hata: {ex.Message}");
+                return StatusCode(500, "Mekanlar aranırken sunucuda bir hata oluştu.");
+            }
+        }
+
         [HttpPost("import-from-osm")]
         public async Task<IActionResult> ImportFromOsm([FromQuery] long osmId)
         {
             try
             {
-                // Kontrolü artık PoiService yapıyor. Controller'ın işi değil.
                 if (_poiService.IsOsmIdExists(osmId))
                 {
                     return Conflict("Bu mekan zaten sisteme eklenmiş.");
                 }
-
-                // Detayları OsmService'ten alıyoruz.
+                
+                // Sena'nın OsmService'inde GetPlaceDetailsAsync metodu olmalı
                 var osmElement = await _osmService.GetPlaceDetailsAsync(osmId);
                 if (osmElement == null)
                 {
                     return NotFound($"OSM'de {osmId} ID'li mekan bulunamadı.");
                 }
-
-                // Tüm dönüştürme ve ekleme işini PoiService'e devrediyoruz.
+                
                 var createdPoi = _poiService.ImportFromOsm(osmElement);
 
-                // Başarılı cevabı dönüyoruz.
                 return CreatedAtAction(nameof(GetPoiById), new { id = createdPoi.Id }, createdPoi);
             }
             catch (Exception ex)
             {
-                // Loglama ve hata yönetimi
-                return StatusCode(500, "Veri işlenirken bir hata oluştu: " + ex.Message);
+                Console.WriteLine($"Hata: {ex.Message}");
+                return StatusCode(500, "Veri işlenirken bir hata oluştu.");
             }
         }
     }
