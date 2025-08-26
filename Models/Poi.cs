@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations; // Bu satırı eklemek çok önemli!
+using System.ComponentModel.DataAnnotations; // Bu satırı eklemek çok önemli!
 
 namespace GeziRotasi.API.Models
 {
