@@ -1,6 +1,6 @@
-﻿using GeZenti.Api.Dtos;
+﻿using GeZentiRotasi.Api.Dtos;
 
-namespace GeZenti.Api.Services
+namespace GeZentiRotasi.Api.Services
 {
     public interface IRouteService
     {

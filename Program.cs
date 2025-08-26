@@ -1,4 +1,4 @@
-using GeZenti.Api.Services;
+using GeZentiRotasi.Api.Services;
 using GeziRotasi.API.Services;
 
 var builder = WebApplication.CreateBuilder(args);

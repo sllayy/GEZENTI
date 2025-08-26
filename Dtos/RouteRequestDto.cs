@@ -1,4 +1,4 @@
-﻿namespace GeZenti.Api.Dtos
+﻿namespace GeZentiRotasi.Api.Dtos
 {
     public class RouteRequestDto
     {
@@ -6,5 +6,8 @@
         public List<double[]> Coordinates { get; set; } = new();
         public bool OptimizeOrder { get; set; } = true;
         public bool GeoJson { get; set; } = true;
+        public bool ReturnToStart { get; set; } = false;
+        public bool AvoidHighwaysOnFoot { get; set; } = true;    
+        public int Alternatives { get; set; } = 0;
     }
 }

@@ -1,8 +1,8 @@
-﻿using GeZenti.Api.Dtos;
-using GeZenti.Api.Services;
+﻿using GeZentiRotasi.Api.Dtos;
+using GeZentiRotasi.Api.Services;
 using Microsoft.AspNetCore.Mvc;
 //conflict test
-namespace GeZenti.Api.Controllers
+namespace GeZentiRotasi.Api.Controllers
 {
     [ApiController]
     [Route("route")]
