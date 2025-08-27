@@ -2,6 +2,8 @@
 using System.Text.Json;
 using GeziRotasi.API.Dtos;
 namespace GeziRotasi.API.Services
+using GeZentiRotasi.Api.Dtos;
+namespace GeZentiRotasi.Api.Services
 {
     public class RouteService : IRouteService
     {

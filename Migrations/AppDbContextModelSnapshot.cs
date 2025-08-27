@@ -31,6 +31,8 @@ namespace GeziRotasi.API.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Category")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
                         .IsRequired()
                         .HasColumnType("text");
 

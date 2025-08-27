@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using GeziRotasi.API.Models;
 using GeziRotasi.API.Services;
 using System.Threading.Tasks; // async/await için gerekli
+using System.Threading.Tasks;
 using System;
 using System.Linq;
 using Microsoft.Extensions.Logging;
@@ -34,6 +35,7 @@ namespace GeziRotasi.API.Controllers
                                      [FromQuery] int pageNumber = 1,
                                      [FromQuery] int pageSize = 10,
                                      [FromQuery] string? format = "json") // YENİ FORMAT PARAMETRESİ
+        public IActionResult GetPois([FromQuery] string? category, [FromQuery] string? searchTerm, [FromQuery] string? sortBy, [FromQuery(Name = "sort")] string? sortDirection, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
             // Önce, her zamanki gibi verileri veritabanından alıyoruz.
             var pois = await _poiService.GetAllPoisAsync(category, searchTerm, sortBy, sortDirection, pageNumber, pageSize);
@@ -49,13 +51,16 @@ namespace GeziRotasi.API.Controllers
             else
             {
                 // Değilse, her zamanki gibi normal JSON olarak döndürüyoruz.
-                return Ok(pois);
-            }
+            var pois = _poiService.GetAllPois(category, searchTerm, sortBy, sortDirection, pageNumber, pageSize);
+            return Ok(pois);
+        }
         }
 
         [HttpGet("{id}")]
+        public IActionResult GetPoiById(int id)
         public async Task<IActionResult> GetPoiById(int id)
         {
+            var poi = _poiService.GetPoiById(id);
             var poi = await _poiService.GetPoiByIdAsync(id);
             if (poi == null) return NotFound();
             return Ok(poi);
@@ -63,18 +68,23 @@ namespace GeziRotasi.API.Controllers
 
         [HttpPost]
         public async Task<IActionResult> CreatePoi([FromBody] Poi newPoi)
+        public IActionResult CreatePoi([FromBody] Poi newPoi)
         {
             var createdPoi = await _poiService.CreatePoiAsync(newPoi);
+            var createdPoi = _poiService.CreatePoi(newPoi);
             return CreatedAtAction(nameof(GetPoiById), new { id = createdPoi.Id }, createdPoi);
         }
 
         [HttpPut("{id}")]
+        public IActionResult UpdatePoi(int id, [FromBody] Poi updatedPoi)
         public async Task<IActionResult> UpdatePoi(int id, [FromBody] Poi updatedPoi)
         {
             if (id != updatedPoi.Id) return BadRequest("URL ID'si ile gövde ID'si eşleşmiyor.");
+            var existingPoi = _poiService.GetPoiById(id);
 
             var existingPoi = await _poiService.GetPoiByIdAsync(id);
             if (existingPoi == null) return NotFound();
+            _poiService.UpdatePoi(updatedPoi);
 
             // Artık servise hem ID'yi hem de yeni veriyi gönderiyoruz.
             await _poiService.UpdatePoiAsync(id, updatedPoi);
@@ -83,10 +93,13 @@ namespace GeziRotasi.API.Controllers
         }
 
         [HttpDelete("{id}")]
+        public IActionResult DeletePoi(int id)
         public async Task<IActionResult> DeletePoi(int id)
         {
             var existingPoi = await _poiService.GetPoiByIdAsync(id);
+            var existingPoi = _poiService.GetPoiById(id);
             if (existingPoi == null) return NotFound();
+            _poiService.DeletePoi(id);
 
             await _poiService.DeletePoiAsync(id);
             return NoContent();
@@ -110,6 +123,7 @@ namespace GeziRotasi.API.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "SearchNearbyPlaces endpoint'inde bir hata oluştu.");
+                _logger.LogError(ex, "SearchNearbyPlaces endpoint'inde hata oluştu.");
                 return StatusCode(500, "Mekanlar aranırken sunucuda bir hata oluştu.");
             }
         }
@@ -120,6 +134,7 @@ namespace GeziRotasi.API.Controllers
             try
             {
                 if (await _poiService.IsOsmIdExistsAsync(osmId))
+                if (_poiService.IsOsmIdExists(osmId))
                 {
                     return Conflict("Bu mekan zaten sisteme eklenmiş.");
                 }
@@ -132,6 +147,7 @@ namespace GeziRotasi.API.Controllers
 
                 var createdPoi = await _poiService.ImportFromOsmAsync(osmElement);
 
+                var createdPoi = _poiService.ImportFromOsm(osmElement);
                 return CreatedAtAction(nameof(GetPoiById), new { id = createdPoi.Id }, createdPoi);
             }
             catch (Exception ex)

@@ -22,6 +22,8 @@ namespace GeziRotasi.API.Models
         [Range(-180.0, 180.0, ErrorMessage = "Boylam -180 ile 180 arasında olmalıdır.")]
         public double Longitude { get; set; }
 
+        [StringLength(50)]
+        public string Category { get; set; }
         public PoiCategory Category { get; set; }
 
         public string? ExternalApiId { get; set; }

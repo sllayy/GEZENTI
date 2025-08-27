@@ -1,6 +1,8 @@
 ﻿using GeZentiRotasi.Api.Dtos;
 using GeZentiRotasi.Api.Services;
 using Microsoft.AspNetCore.Mvc;
+//conflict test
+namespace GeZentiRotasi.Api.Controllers
 
 
 namespace GeziRotasi.API.Controllers
@@ -19,6 +21,7 @@ namespace GeziRotasi.API.Controllers
             if (!ModelState.IsValid) return ValidationProblem(ModelState);
             var result = await _routeService.GetOptimizedRouteAsync(request,
                                                                     ct);
+            var result = await _routeService.GetOptimizedRouteAsync(request, ct);
             return Ok(result);
         }
 

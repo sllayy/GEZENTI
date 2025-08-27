@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using GeziRotasi.API.Models;
 using GeziRotasi.API.Models;
+using GeziRotasi.API.Models; // senin entity’lerin buradaysa
+
 namespace GeziRotasi.API.Data
 {
     public class AppDbContext : DbContext
@@ -9,6 +11,7 @@ namespace GeziRotasi.API.Data
 
         // --- MEVCUT TABLON ---
         // Bu, projede zaten var olan Mekanlar tablosu.
+        // Örnek: Entity tablolarını ekle
         public DbSet<Poi> Pois { get; set; }
 
         // --- YENİ EKLENEN TABLOLAR BURASI ---

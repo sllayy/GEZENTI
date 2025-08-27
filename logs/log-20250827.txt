@@ -156,7 +156,7 @@ System.InvalidOperationException: Unable to resolve service for type 'GeziRotasi
 2025-08-27 10:14:06.015 +03:00 [INF] Executed endpoint 'GeziRotasi.API.Controllers.PoisController.GetPoiById (GeziRotasi.API)'
 2025-08-27 10:14:06.018 +03:00 [INF] HTTP GET /api/Pois/1 responded 200 in 44.1294 ms
 2025-08-27 10:14:06.019 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7248/api/Pois/1 - 200 null application/json; charset=utf-8 52.924ms
-2025-08-27 10:25:09.244 +03:00 [FTL] Uygulama başlatılırken ölümcül bir hata oluştu.
+2025-08-27 10:25:09.244 +03:00 [FTL] Uygulama ba�lat�l�rken �l�mc�l bir hata olu�tu.
 Microsoft.Extensions.Hosting.HostAbortedException: The host was aborted.
    at Microsoft.Extensions.Hosting.HostFactoryResolver.HostingListener.ThrowHostAborted()
    at Microsoft.Extensions.Hosting.HostFactoryResolver.HostingListener.OnNext(KeyValuePair`2 value)
@@ -166,7 +166,7 @@ Microsoft.Extensions.Hosting.HostAbortedException: The host was aborted.
    at Microsoft.Extensions.Hosting.HostApplicationBuilder.Build()
    at Microsoft.AspNetCore.Builder.WebApplicationBuilder.Build()
    at Program.<Main>$(String[] args) in C:\Users\mebalci\Desktop\Projeler\STAJ\GEZENTI\Program.cs:line 34
-2025-08-27 10:27:53.788 +03:00 [FTL] Uygulama başlatılırken ölümcül bir hata oluştu.
+2025-08-27 10:27:53.788 +03:00 [FTL] Uygulama ba�lat�l�rken �l�mc�l bir hata olu�tu.
 Microsoft.Extensions.Hosting.HostAbortedException: The host was aborted.
    at Microsoft.Extensions.Hosting.HostFactoryResolver.HostingListener.ThrowHostAborted()
    at Microsoft.Extensions.Hosting.HostFactoryResolver.HostingListener.OnNext(KeyValuePair`2 value)
@@ -176,7 +176,7 @@ Microsoft.Extensions.Hosting.HostAbortedException: The host was aborted.
    at Microsoft.Extensions.Hosting.HostApplicationBuilder.Build()
    at Microsoft.AspNetCore.Builder.WebApplicationBuilder.Build()
    at Program.<Main>$(String[] args) in C:\Users\mebalci\Desktop\Projeler\STAJ\GEZENTI\Program.cs:line 34
-2025-08-27 10:32:12.691 +03:00 [FTL] Uygulama başlatılırken ölümcül bir hata oluştu.
+2025-08-27 10:32:12.691 +03:00 [FTL] Uygulama ba�lat�l�rken �l�mc�l bir hata olu�tu.
 Microsoft.Extensions.Hosting.HostAbortedException: The host was aborted.
    at Microsoft.Extensions.Hosting.HostFactoryResolver.HostingListener.ThrowHostAborted()
    at Microsoft.Extensions.Hosting.HostFactoryResolver.HostingListener.OnNext(KeyValuePair`2 value)
@@ -186,7 +186,7 @@ Microsoft.Extensions.Hosting.HostAbortedException: The host was aborted.
    at Microsoft.Extensions.Hosting.HostApplicationBuilder.Build()
    at Microsoft.AspNetCore.Builder.WebApplicationBuilder.Build()
    at Program.<Main>$(String[] args) in C:\Users\mebalci\Desktop\Projeler\STAJ\GEZENTI\Program.cs:line 34
-2025-08-27 10:33:18.867 +03:00 [FTL] Uygulama başlatılırken ölümcül bir hata oluştu.
+2025-08-27 10:33:18.867 +03:00 [FTL] Uygulama ba�lat�l�rken �l�mc�l bir hata olu�tu.
 Microsoft.Extensions.Hosting.HostAbortedException: The host was aborted.
    at Microsoft.Extensions.Hosting.HostFactoryResolver.HostingListener.ThrowHostAborted()
    at Microsoft.Extensions.Hosting.HostFactoryResolver.HostingListener.OnNext(KeyValuePair`2 value)
