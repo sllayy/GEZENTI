@@ -1,0 +1,55 @@
+2025-08-27 09:24:57.525 +03:00 [INF] Now listening on: https://localhost:7248
+2025-08-27 09:24:57.545 +03:00 [INF] Now listening on: http://localhost:5136
+2025-08-27 09:24:57.609 +03:00 [INF] Application started. Press Ctrl+C to shut down.
+2025-08-27 09:24:57.611 +03:00 [INF] Hosting environment: Development
+2025-08-27 09:24:57.611 +03:00 [INF] Content root path: C:\Users\mensu\Source\Repos\GEZENTI
+2025-08-27 09:24:59.300 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7248/swagger/index.html - null null
+2025-08-27 09:24:59.454 +03:00 [INF] HTTP GET /swagger/index.html responded 200 in 45.6521 ms
+2025-08-27 09:24:59.462 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7248/swagger/index.html - 200 null text/html;charset=utf-8 164.1632ms
+2025-08-27 09:24:59.479 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7248/_framework/aspnetcore-browser-refresh.js - null null
+2025-08-27 09:24:59.499 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7248/_vs/browserLink - null null
+2025-08-27 09:24:59.501 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7248/_framework/aspnetcore-browser-refresh.js - 200 13764 application/javascript; charset=utf-8 22.1915ms
+2025-08-27 09:24:59.742 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7248/_vs/browserLink - 200 null text/javascript; charset=UTF-8 243.2238ms
+2025-08-27 09:24:59.885 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7248/swagger/v1/swagger.json - null null
+2025-08-27 09:24:59.898 +03:00 [INF] HTTP GET /swagger/v1/swagger.json responded 200 in 8.7852 ms
+2025-08-27 09:24:59.901 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7248/swagger/v1/swagger.json - 200 null application/json;charset=utf-8 15.8737ms
+2025-08-27 09:25:22.403 +03:00 [INF] Request starting HTTP/1.1 GET https://localhost:7248/api/pois - null null
+2025-08-27 09:25:22.412 +03:00 [INF] Executing endpoint 'GeziRotasi.API.Controllers.PoisController.GetPois (GeziRotasi.API)'
+2025-08-27 09:25:22.467 +03:00 [INF] Route matched with {action = "GetPois", controller = "Pois"}. Executing controller action with signature Microsoft.AspNetCore.Mvc.IActionResult GetPois(System.String, System.String, System.String, System.String, Int32, Int32) on controller GeziRotasi.API.Controllers.PoisController (GeziRotasi.API).
+2025-08-27 09:25:22.515 +03:00 [INF] Executing OkObjectResult, writing value of type 'System.Collections.Generic.List`1[[GeziRotasi.API.Models.Poi, GeziRotasi.API, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+2025-08-27 09:25:22.540 +03:00 [INF] Executed action GeziRotasi.API.Controllers.PoisController.GetPois (GeziRotasi.API) in 65.6338ms
+2025-08-27 09:25:22.543 +03:00 [INF] Executed endpoint 'GeziRotasi.API.Controllers.PoisController.GetPois (GeziRotasi.API)'
+2025-08-27 09:25:22.544 +03:00 [INF] HTTP GET /api/pois responded 200 in 136.6344 ms
+2025-08-27 09:25:22.549 +03:00 [INF] Request finished HTTP/1.1 GET https://localhost:7248/api/pois - 200 null application/json; charset=utf-8 146.2172ms
+2025-08-27 09:25:31.723 +03:00 [INF] Request starting HTTP/1.1 GET https://localhost:7248/api/pois?category=M%C3%BCze - null null
+2025-08-27 09:25:31.730 +03:00 [INF] Executing endpoint 'GeziRotasi.API.Controllers.PoisController.GetPois (GeziRotasi.API)'
+2025-08-27 09:25:31.731 +03:00 [INF] Route matched with {action = "GetPois", controller = "Pois"}. Executing controller action with signature Microsoft.AspNetCore.Mvc.IActionResult GetPois(System.String, System.String, System.String, System.String, Int32, Int32) on controller GeziRotasi.API.Controllers.PoisController (GeziRotasi.API).
+2025-08-27 09:25:31.752 +03:00 [INF] Executing OkObjectResult, writing value of type 'System.Collections.Generic.List`1[[GeziRotasi.API.Models.Poi, GeziRotasi.API, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+2025-08-27 09:25:31.759 +03:00 [INF] Executed action GeziRotasi.API.Controllers.PoisController.GetPois (GeziRotasi.API) in 24.8077ms
+2025-08-27 09:25:31.762 +03:00 [INF] Executed endpoint 'GeziRotasi.API.Controllers.PoisController.GetPois (GeziRotasi.API)'
+2025-08-27 09:25:31.763 +03:00 [INF] HTTP GET /api/pois responded 200 in 34.5625 ms
+2025-08-27 09:25:31.766 +03:00 [INF] Request finished HTTP/1.1 GET https://localhost:7248/api/pois?category=M%C3%BCze - 200 null application/json; charset=utf-8 42.4562ms
+2025-08-27 09:25:58.038 +03:00 [INF] Request starting HTTP/1.1 GET https://localhost:7248/api/pois?pageNumber=2&pageSize=3 - null null
+2025-08-27 09:25:58.042 +03:00 [INF] Executing endpoint 'GeziRotasi.API.Controllers.PoisController.GetPois (GeziRotasi.API)'
+2025-08-27 09:25:58.044 +03:00 [INF] Route matched with {action = "GetPois", controller = "Pois"}. Executing controller action with signature Microsoft.AspNetCore.Mvc.IActionResult GetPois(System.String, System.String, System.String, System.String, Int32, Int32) on controller GeziRotasi.API.Controllers.PoisController (GeziRotasi.API).
+2025-08-27 09:25:58.051 +03:00 [INF] Executing OkObjectResult, writing value of type 'System.Collections.Generic.List`1[[GeziRotasi.API.Models.Poi, GeziRotasi.API, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+2025-08-27 09:25:58.054 +03:00 [INF] Executed action GeziRotasi.API.Controllers.PoisController.GetPois (GeziRotasi.API) in 5.7071ms
+2025-08-27 09:25:58.055 +03:00 [INF] Executed endpoint 'GeziRotasi.API.Controllers.PoisController.GetPois (GeziRotasi.API)'
+2025-08-27 09:25:58.057 +03:00 [INF] HTTP GET /api/pois responded 200 in 14.5425 ms
+2025-08-27 09:25:58.058 +03:00 [INF] Request finished HTTP/1.1 GET https://localhost:7248/api/pois?pageNumber=2&pageSize=3 - 200 null application/json; charset=utf-8 20.0197ms
+2025-08-27 09:26:16.109 +03:00 [INF] Request starting HTTP/1.1 GET https://localhost:7248/api/pois/import-from-osm?osmId=HATALI - null null
+2025-08-27 09:26:16.111 +03:00 [INF] Executing endpoint 'GeziRotasi.API.Controllers.PoisController.GetPoiById (GeziRotasi.API)'
+2025-08-27 09:26:16.120 +03:00 [INF] Route matched with {action = "GetPoiById", controller = "Pois"}. Executing controller action with signature Microsoft.AspNetCore.Mvc.IActionResult GetPoiById(Int32) on controller GeziRotasi.API.Controllers.PoisController (GeziRotasi.API).
+2025-08-27 09:26:16.134 +03:00 [INF] Executing BadRequestObjectResult, writing value of type 'Microsoft.AspNetCore.Mvc.ValidationProblemDetails'.
+2025-08-27 09:26:16.184 +03:00 [INF] Executed action GeziRotasi.API.Controllers.PoisController.GetPoiById (GeziRotasi.API) in 60.511ms
+2025-08-27 09:26:16.185 +03:00 [INF] Executed endpoint 'GeziRotasi.API.Controllers.PoisController.GetPoiById (GeziRotasi.API)'
+2025-08-27 09:26:16.186 +03:00 [INF] HTTP GET /api/pois/import-from-osm responded 400 in 74.4407 ms
+2025-08-27 09:26:16.187 +03:00 [INF] Request finished HTTP/1.1 GET https://localhost:7248/api/pois/import-from-osm?osmId=HATALI - 400 null application/problem+json; charset=utf-8 78.1592ms
+2025-08-27 09:26:23.908 +03:00 [INF] Request starting HTTP/1.1 POST https://localhost:7248/api/pois/import-from-osm?osmId=HATALI - null 0
+2025-08-27 09:26:23.916 +03:00 [INF] Executing endpoint 'GeziRotasi.API.Controllers.PoisController.ImportFromOsm (GeziRotasi.API)'
+2025-08-27 09:26:23.923 +03:00 [INF] Route matched with {action = "ImportFromOsm", controller = "Pois"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] ImportFromOsm(Int64) on controller GeziRotasi.API.Controllers.PoisController (GeziRotasi.API).
+2025-08-27 09:26:23.927 +03:00 [INF] Executing BadRequestObjectResult, writing value of type 'Microsoft.AspNetCore.Mvc.ValidationProblemDetails'.
+2025-08-27 09:26:23.929 +03:00 [INF] Executed action GeziRotasi.API.Controllers.PoisController.ImportFromOsm (GeziRotasi.API) in 3.673ms
+2025-08-27 09:26:23.931 +03:00 [INF] Executed endpoint 'GeziRotasi.API.Controllers.PoisController.ImportFromOsm (GeziRotasi.API)'
+2025-08-27 09:26:23.932 +03:00 [INF] HTTP POST /api/pois/import-from-osm responded 400 in 15.9530 ms
+2025-08-27 09:26:23.935 +03:00 [INF] Request finished HTTP/1.1 POST https://localhost:7248/api/pois/import-from-osm?osmId=HATALI - 400 null application/problem+json; charset=utf-8 26.0207ms

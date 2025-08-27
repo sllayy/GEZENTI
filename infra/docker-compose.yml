@@ -1,0 +1,10 @@
+﻿version: "3.9"
+
+services:
+  osrm:
+    image: osrm/osrm-backend
+    command: osrm-routed --algorithm mld /data/region.osrm
+    volumes:
+      - ./osrm-data:/data
+    ports:
+      - "5000:5000"
