@@ -3,6 +3,7 @@ using System;
 using GeziRotasi.API.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace GeziRotasi.API.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250827084846_AddWorkingHoursTable")]
+    partial class AddWorkingHoursTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -32,7 +35,8 @@ namespace GeziRotasi.API.Migrations
 
                     b.Property<string>("Category")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
 
                     b.Property<string>("Description")
                         .IsRequired()
@@ -128,37 +132,6 @@ namespace GeziRotasi.API.Migrations
                         });
                 });
 
-            modelBuilder.Entity("GeziRotasi.API.Models.SpecialDayHour", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<TimeOnly?>("CloseTime")
-                        .HasColumnType("time without time zone");
-
-                    b.Property<DateOnly>("Date")
-                        .HasColumnType("date");
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.Property<TimeOnly?>("OpenTime")
-                        .HasColumnType("time without time zone");
-
-                    b.Property<int>("PoiId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PoiId");
-
-                    b.ToTable("SpecialDayHours");
-                });
-
             modelBuilder.Entity("GeziRotasi.API.Models.WorkingHour", b =>
                 {
                     b.Property<int>("Id")
@@ -186,17 +159,6 @@ namespace GeziRotasi.API.Migrations
                     b.ToTable("WorkingHours");
                 });
 
-            modelBuilder.Entity("GeziRotasi.API.Models.SpecialDayHour", b =>
-                {
-                    b.HasOne("GeziRotasi.API.Models.Poi", "Poi")
-                        .WithMany("SpecialDayHours")
-                        .HasForeignKey("PoiId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Poi");
-                });
-
             modelBuilder.Entity("GeziRotasi.API.Models.WorkingHour", b =>
                 {
                     b.HasOne("GeziRotasi.API.Models.Poi", "Poi")
@@ -210,8 +172,6 @@ namespace GeziRotasi.API.Migrations
 
             modelBuilder.Entity("GeziRotasi.API.Models.Poi", b =>
                 {
-                    b.Navigation("SpecialDayHours");
-
                     b.Navigation("WorkingHours");
                 });
 #pragma warning restore 612, 618

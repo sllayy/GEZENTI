@@ -1,5 +1,8 @@
 using GeziRotasi.API.Services;
 using Serilog;
+using GeziRotasi.API.Data; // AppDbContext'in yaşadığı yer
+using Microsoft.EntityFrameworkCore; // UseNpgsql için gerekli
+using System.Text.Json.Serialization;
 
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
@@ -21,8 +24,19 @@ try
     builder.Services.AddHttpClient();
     builder.Services.AddScoped<OsmService>();
     builder.Services.AddScoped<PoiService>();
+    // VERİTABANI BAĞLANTISI 
+    builder.Services.AddDbContext<AppDbContext>(options =>
+        options.UseNpgsql(builder.Configuration.GetConnectionString("Default")));
+    
+    builder.Services.AddControllers().AddJsonOptions(options =>
+    {
+        // Enum'ları metin olarak (string) işlemesini sağlayan dönüştürücüyü ekliyoruz.
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+        // ReferenceHandler.IgnoreCycles, bir döngü tespit ettiğinde
+        // o referansı görmezden gelerek sonsuz döngüyü engeller.
+        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+    });
 
-    builder.Services.AddControllers();
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddSwaggerGen();
 

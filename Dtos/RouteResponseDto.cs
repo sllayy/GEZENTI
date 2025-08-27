@@ -1,7 +1,7 @@
 ﻿using System.Text.Json;
 
-namespace GeZentiRotasi.Api.Dtos
-{
+namespace GeziRotasi.API.Dtos
+{   
     public class RouteResponseDto
     {
         public double Distance { get; set; }       // metre
