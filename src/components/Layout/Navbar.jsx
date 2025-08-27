@@ -90,6 +90,7 @@ const Navbar = ({ isLoggedIn, setIsLoggedIn }) => {
                         )}
                     </div>
                 </div>
+                
             </div>
         </nav>
     );

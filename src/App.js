@@ -3,6 +3,8 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from './components/Layout/Navbar';
 import Footer from './components/Layout/Footer'; // Remote'dan eklenen Footer bileşeni
 import Main from './components/Main/main'; // Remote'dan eklenen Main bileşeni
+import ProfilePage from './pages/ProfilePage';  // Remote'dan eklenen ProfilePage bileşeni
+
 
 // Sayfalar
 import LoginPage from './pages/LoginPage';
@@ -43,6 +45,7 @@ function App() {
             <Route path="/route-builder" element={<RotaOlustur />} />
             <Route path="/login" element={<LoginPage setIsLoggedIn={setIsLoggedIn} />} />
             <Route path="/register" element={<RegisterPage setIsLoggedIn={setIsLoggedIn} />} />
+           <Route path="/profile" element={isLoggedIn ? <ProfilePage /> : <LoginPage setIsLoggedIn={setIsLoggedIn} />} />
           </Routes>
         </main>
       </div>
