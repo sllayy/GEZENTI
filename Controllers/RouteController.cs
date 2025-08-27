@@ -1,41 +1,58 @@
-﻿using GeZentiRotasi.Api.Dtos;
-using GeZentiRotasi.Api.Services;
+using GeziRotasi.API.Dtos; // DTO'larınızın doğru namespace'i bu olmalı
+using GeziRotasi.API.Services; // Servislerinizin doğru namespace'i bu olmalı
 using Microsoft.AspNetCore.Mvc;
-//conflict test
-namespace GeZentiRotasi.Api.Controllers
+using System.Threading;
+using System.Threading.Tasks;
 
-
+// Sadece bir tane, doğru namespace olmalı.
 namespace GeziRotasi.API.Controllers
 {
     [ApiController]
-    [Route("route")]
+    // Controller'ın adıyla eşleşmesi için genellikle [Route("api/[controller]")] kullanılır.
+    // Ama sizin standardınız "route" ise bu da doğrudur.
+    [Route("api/route")] 
     public class RouteController : ControllerBase
     {
         private readonly IRouteService _routeService;
-        public RouteController(IRouteService routeService) => _routeService = routeService;
 
-        /// <summary>OptimizeOrder=true ise /trip, değilse /route çağrılır.</summary>
+        public RouteController(IRouteService routeService)
+        {
+            _routeService = routeService;
+        }
+
+        /// <summary>
+        /// Verilen POI'lar için optimize edilmiş bir rota oluşturur.
+        /// OptimizeOrder=true ise /trip, değilse /route OSRM endpoint'ini çağırır.
+        /// </summary>
         [HttpPost("optimize")]
         public async Task<IActionResult> Optimize([FromBody] RouteRequestDto request, CancellationToken ct)
         {
-            if (!ModelState.IsValid) return ValidationProblem(ModelState);
-            var result = await _routeService.GetOptimizedRouteAsync(request,
-                                                                    ct);
+            // Model validasyon kontrolü
+            if (!ModelState.IsValid)
+            {
+                return ValidationProblem(ModelState);
+            }
+
+            // Servis metodunu sadece bir kez çağırıyoruz.
             var result = await _routeService.GetOptimizedRouteAsync(request, ct);
+            
             return Ok(result);
         }
 
-        // --- ROTA DEĞERLENDİRME METODU ---
-        
-        [HttpPost("{routeId}/feedback")]
+        /// <summary>
+        /// Oluşturulmuş bir rota için kullanıcıdan puan ve yorum alır.
+        /// </summary>
+        [HttpPost("{routeId:int}/feedback")]
         public IActionResult SubmitRouteFeedback(int routeId, [FromBody] CreateRouteFeedbackDto feedbackDto)
         {
-            // Frontend'den gelen verilerin doğru ulaşıp ulaşmadığını kontrol edelim.
-            Console.WriteLine($"Gelen Rota Puanı: {feedbackDto.Rating}");
-            Console.WriteLine($"Gelen Genel Yorum: {feedbackDto.Comment}");
-            Console.WriteLine($"Değerlendirilen Rota ID: {routeId}");
+            // Gelen verileri loglamak veya işlemek için burası doğru yer.
+            // Console.WriteLine yerine _logger kullanmak daha iyi bir pratiktir.
+            // _logger.LogInformation("Gelen Rota Puanı: {Rating}, Yorum: {Comment}", feedbackDto.Rating, feedbackDto.Comment);
             
-            // Frontend'e işlemin başarılı olduğuna dair bir mesaj gönder.
+            // TODO: Bu geri bildirimi veritabanına kaydetmek için bir servis metodu çağrılmalı.
+            // Örnek: _routeService.SaveFeedbackAsync(routeId, feedbackDto);
+
+            // Şimdilik, işlemin başarılı olduğuna dair bir mesaj dönüyoruz.
             return Ok(new { message = "Geri bildiriminiz için teşekkür ederiz!" });
         }
     }
