@@ -1,9 +1,11 @@
-﻿using GeZentiRotasi.Api.Dtos;
+﻿using GeziRotasi.API.Dtos;
+using GeziRotasi.API.Dtos;
 
-namespace GeZentiRotasi.Api.Services
+namespace GeziRotasi.API.Services
 {
     public interface IRouteService
     {
-        Task<RouteResponseDto> GetOptimizedRouteAsync(RouteRequestDto request, CancellationToken ct = default);
+        Task<object> GetOptimizedRouteAsync(RouteRequestDto request, CancellationToken ct); 
+        
     }
 }

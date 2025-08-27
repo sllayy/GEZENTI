@@ -1,6 +1,6 @@
 ﻿using System.Text.Json;
 
-namespace GeZentiRotasi.Api.Dtos
+namespace GeziRotasi.API.Dtos
 {
     public class RouteResponseDto
     {

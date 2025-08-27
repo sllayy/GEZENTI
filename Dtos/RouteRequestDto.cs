@@ -1,4 +1,4 @@
-﻿namespace GeZentiRotasi.Api.Dtos
+﻿namespace GeziRotasi.API.Dtos
 {
     public class RouteRequestDto
     {
