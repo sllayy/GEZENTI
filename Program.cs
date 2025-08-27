@@ -1,4 +1,5 @@
 using GeziRotasi.API.Data;
+using GeziRotasi.API.Repositories.Categories;
 using GeziRotasi.API.Services;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
@@ -23,6 +24,8 @@ try
     builder.Services.AddHttpClient();
     builder.Services.AddScoped<OsmService>();
     builder.Services.AddScoped<PoiService>();
+    builder.Services.AddScoped<ICategoryRepository, InMemoryCategoryRepository>();
+    builder.Services.AddScoped<ICategoryService, CategoryService>();
 
     builder.Services.AddControllers();
     builder.Services.AddEndpointsApiExplorer();
