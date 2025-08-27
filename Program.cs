@@ -1,65 +1,49 @@
 using GeziRotasi.API.Data;
-using GeziRotasi.API.Repositories.Categories;
 using GeziRotasi.API.Services;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
-using GeziRotasi.API.Data; // AppDbContext'in yaşadığı yer
-using Microsoft.EntityFrameworkCore; // UseNpgsql için gerekli
 using System.Text.Json.Serialization;
+using GeziRotasi.API.Repositories.Categories; // ICategoryRepository için
 
-internal class Program
-{
-    private static void Main(string[] args)
-    {
-Log.Logger = new LoggerConfiguration()
+var builder = WebApplication.CreateBuilder(args);
+
+// 1. Loglama (Serilog) Yapılandırması
+builder.Host.UseSerilog((context, services, configuration) => configuration
+    .ReadFrom.Configuration(context.Configuration)
+    .ReadFrom.Services(services)
+    .Enrich.FromLogContext()
     .WriteTo.Console()
-    .CreateBootstrapLogger();
+    .WriteTo.File("logs/log-.txt", rollingInterval: RollingInterval.Day, retainedFileCountLimit: 7));
 
 try
 {
-    Log.Information("Uygulama başlatılıyor...");
+    Log.Information("Uygulama servisleri yapılandırılıyor...");
 
-    var builder = WebApplication.CreateBuilder(args);
-
-    builder.Host.UseSerilog((context, services, configuration) => configuration
-        .ReadFrom.Configuration(context.Configuration)
-        .ReadFrom.Services(services)
-        .Enrich.FromLogContext()
-        .WriteTo.Console()
-        .WriteTo.File("logs/log-.txt", rollingInterval: RollingInterval.Day));
-
+    // 2. Servisleri Ekleme (Dependency Injection)
+    
+    // Veritabanı Bağlantısı
+    builder.Services.AddDbContext<AppDbContext>(options =>
+        options.UseNpgsql(builder.Configuration.GetConnectionString("Default")));
+    
+    // HTTP İstekleri için
     builder.Services.AddHttpClient();
-    builder.Services.AddScoped<OsmService>();
-    builder.Services.AddScoped<PoiService>();
-            builder.Services.AddScoped<ICategoryRepository, InMemoryCategoryRepository>();
-            builder.Services.AddScoped<ICategoryService, CategoryService>();
-
-    builder.Services.AddControllers();
+    
+    // API Controller'ları ve JSON Ayarları
+    builder.Services.AddControllers().AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+    });
+    
+    // API Dokümantasyonu (Swagger)
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddSwaggerGen();
+    
+    // Kendi yazdığımız servisler
+    builder.Services.AddScoped<OsmService>();
+    builder.Services.AddScoped<PoiService>();
+    builder.Services.AddScoped<ICategoryRepository, InMemoryCategoryRepository>();
+    builder.Services.AddScoped<ICategoryService, CategoryService>();
+    // Buraya diğer servisleriniz de (IRouteService vb.) eklenecek
 
-    var app = builder.Build();
-
-    app.UseSerilogRequestLogging();
-
-    if (app.Environment.IsDevelopment())
-    {
-        app.UseSwagger();
-        app.UseSwaggerUI();
-    }
-
-    app.UseHttpsRedirection();
-    app.UseAuthorization();
-    app.MapControllers();
-    app.Run();
-}
-catch (Exception ex)
-{
-    Log.Fatal(ex, "Uygulama başlatılırken ölümcül bir hata oluştu.");
-}
-finally
-{
-    Log.CloseAndFlush();
-}
-    }
-}
+    // 3
