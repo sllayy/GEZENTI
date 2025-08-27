@@ -1,14 +1,15 @@
-using Microsoft.EntityFrameworkCore;
 using GeziRotasi.API.Data;
+using GeziRotasi.API.Dtos;
 using GeziRotasi.API.Models;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using System;
+using Microsoft.EntityFrameworkCore;
 using NetTopologySuite.Features;
 using NetTopologySuite.Geometries;
 using NetTopologySuite.IO;
+using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace GeziRotasi.API.Services
 {
@@ -174,4 +175,20 @@ namespace GeziRotasi.API.Services
             var features = new List<Feature>();
             foreach (var poi in pois)
             {
-                var point = new Point(poi.Lon
+                var point = new Point(poi.Longitude, poi.Latitude);
+                var attributes = new AttributesTable
+                {
+                    { "id", poi.Id },
+                    { "name", poi.Name },
+                    { "description", poi.Description },
+                    { "category", poi.Category.ToString() },
+                    { "imageUrl", poi.ImageUrl }
+                };
+                features.Add(new Feature(point, attributes));
+            }
+            var featureCollection = new FeatureCollection();
+            features.ForEach(f => featureCollection.Add(f));
+            return new GeoJsonWriter().Write(featureCollection);
+        }
+    }
+}
