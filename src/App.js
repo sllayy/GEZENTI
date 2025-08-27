@@ -19,40 +19,36 @@ const RotaOlustur = () => <div className="p-8"><h1>Rota Oluşturma Sayfası</h1>
 function App() {
   // Giriş durumunu (state) App bileşeninde tutuyoruz
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-
   return (
     <Router>
       <div className="flex flex-col min-h-screen">
-        {/* Navbar'a state'i ve state'i değiştirecek fonksiyonu prop olarak geçiyoruz */}
         <Navbar isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} />
 
-        {/* Sayfa içeriği */}
         <main className="flex-grow">
           <Routes>
-            {/* Ana sayfa için hem sizin hem de remote'daki kodu birleştirelim */}
-            <Route path="/" element={<Main />} />
-            
-            {/* Sizin Rotalar sayfası bileşeninizi kullanalım */}
+            {/* Ana sayfa ve Footer birlikte */}
+            <Route
+              path="/"
+              element={
+                <div>
+                  <Main />
+                  <Footer />
+                </div>
+              }
+            />
+
             <Route path="/routes" element={<RoutesPage />} />
-            
-            {/* Remote'dan gelen POI bileşenini kullanalım */}
             <Route path="/poi" element={<DiscoverPoi />} />
-            
             <Route path="/map" element={<Harita />} />
             <Route path="/route-builder" element={<RotaOlustur />} />
-            
-            {/* Login ve Register sayfaları için sizin rotalarınızı kullanalım */}
-            <Route 
-              path="/login" 
-              element={<LoginPage setIsLoggedIn={setIsLoggedIn} />} 
-            />
+            <Route path="/login" element={<LoginPage setIsLoggedIn={setIsLoggedIn} />} />
             <Route path="/register" element={<RegisterPage setIsLoggedIn={setIsLoggedIn} />} />
           </Routes>
         </main>
-        <Footer />
       </div>
     </Router>
   );
+
 }
 
 export default App;
