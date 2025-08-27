@@ -3,6 +3,10 @@ import { useNavigate, Link } from 'react-router-dom';
 import { InputText } from 'primereact/inputtext';
 import { Password } from 'primereact/password';
 import { Checkbox } from 'primereact/checkbox';
+// Firebase Authentication fonksiyonlarını import ediyoruz
+import { signInWithPopup } from 'firebase/auth';
+// Projenin src klasöründeki firebase.js dosyasından auth ve provider'ı import ediyoruz
+import { auth, googleProvider } from '../config/firebase.js'; // EĞER BU DOSYA FARKLI BİR YERDEYSE YOLU GÜNCELLEYİN
 
 // Google ikonu için basit bir SVG bileşeni
 const GoogleIcon = () => (
@@ -21,8 +25,9 @@ const LoginPage = ({ setIsLoggedIn }) => {
     const [checked, setChecked] = useState(false);
     const navigate = useNavigate();
 
+    // Normal e-posta/şifre girişi (geçici)
     const handleLogin = (e) => {
-        e.preventDefault(); // Formun sayfayı yenilemesini engelle
+        e.preventDefault(); 
         if (email === "test@gezenti.com" && password === "12345") {
             setIsLoggedIn(true);
             navigate('/');
@@ -30,6 +35,27 @@ const LoginPage = ({ setIsLoggedIn }) => {
             alert("Hatalı e-posta veya şifre!");
         }
     };
+
+    // Google ile giriş fonksiyonu
+    const handleGoogleLogin = async () => {
+        try {
+            const result = await signInWithPopup(auth, googleProvider);
+            const token = await result.user.getIdToken();
+            
+            // Backend ile konuşmak için gereken token'ı tarayıcı hafızasına kaydediyoruz.
+            localStorage.setItem("authToken", token);
+
+            // Uygulamanın genel state'ini güncelliyoruz.
+            setIsLoggedIn(true);
+            
+            // Kullanıcıyı ana sayfaya yönlendiriyoruz.
+            navigate('/');
+        } catch (error) {
+            console.error("Google ile giriş sırasında hata:", error);
+            alert("Google ile giriş yapılamadı. Lütfen tekrar deneyin. Hata kodu: " + error.code);
+        }
+    };
+
 
     return (
         <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-teal-50 via-cyan-50 to-blue-100 p-4 font-sans">
@@ -76,7 +102,7 @@ const LoginPage = ({ setIsLoggedIn }) => {
                             onChange={(e) => setPassword(e.target.value)}
                             className="w-full mt-1"
                             inputClassName="w-full p-inputtext-lg"
-                            placeholder="********"
+                            placeholder=""
                             feedback={false}
                             toggleMask
                         />
@@ -110,7 +136,11 @@ const LoginPage = ({ setIsLoggedIn }) => {
 
 
                 <div>
-                    <button className="w-full inline-flex justify-center items-center py-3 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-base font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+                    {/* Google giriş fonksiyonunu butona bağlıyoruz */}
+                    <button 
+                        onClick={handleGoogleLogin} 
+                        className="w-full inline-flex justify-center items-center py-3 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-base font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                    >
                         <GoogleIcon /> Google ile Giriş
                     </button>
                 </div>
