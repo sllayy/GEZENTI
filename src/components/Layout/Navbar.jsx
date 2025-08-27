@@ -2,7 +2,7 @@ import React from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from 'primereact/button';
 import { Avatar } from 'primereact/avatar';
-import './Navbar.css';
+
 
 // isLoggedIn ve setIsLoggedIn state'leri artık App.js'ten prop olarak geliyor.
 const Navbar = ({ isLoggedIn, setIsLoggedIn }) => {
