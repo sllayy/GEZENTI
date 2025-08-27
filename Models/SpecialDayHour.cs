@@ -17,7 +17,7 @@ namespace GeziRotasi.API.Models
         /// O güne özel bir açıklama (örn: "Ramazan Bayramı", "Resmi Tatil").
         /// </summary>
         [StringLength(100)]
-        public string? Description { get; set; }
+        public string Description { get; set; }
 
         /// <summary>
         /// O güne özel açılış saati. Eğer null ise, o gün kapalı demektir.

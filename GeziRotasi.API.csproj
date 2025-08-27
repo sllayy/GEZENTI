@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
-    <Nullable>enable</Nullable>
+    <Nullable>disable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>dd8d67a4-dfd8-4376-ace4-922d98c25319</UserSecretsId>
     <!-- XML Yorumları oluşturmak ve Swagger'a eklemek için bu satırları eklemek iyi bir pratiktir -->

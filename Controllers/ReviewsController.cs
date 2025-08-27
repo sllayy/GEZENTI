@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Mvc; // ASP.NET Core'un temel parçalarını kullanabilmek için.
 using GeziRotasi.API.Models;
 using GeziRotasi.API.Dtos;      // Az önce oluşturduğumuz DTO'yu tanıyabilmesi için.
-using GeziRotasi.API.Models;    // Review modelini tanıyabilmesi için.
 namespace GeziRotasi.API.Controllers;
 
 // Bu satırlar, bu sınıfın bir API olduğunu ve adresinin nasıl olacağını belirtir.
@@ -20,7 +19,7 @@ public class ReviewsController : ControllerBase
 
         // Şimdilik sadece isteğin gelip gelmediğini ve verilerin doğru olduğunu kontrol edelim.
         Console.WriteLine($"Gelen Puan: {reviewDto.Rating}, Gelen Yorum: {reviewDto.Comment}, Mekan ID: {poiId}");
-        
+
         // Frontend'e "İşlem başarılı, yorumun alındı" mesajı gönderiyoruz.
         return Ok(new { message = "Yorum başarıyla oluşturuldu." });
     }
@@ -36,7 +35,7 @@ public class ReviewsController : ControllerBase
             new { userId = 1, rating = 5, comment = "Manzarası harikaydı, kesinlikle tavsiye ederim!" },
             new { userId = 2, rating = 4, comment = "Giriş biraz pahalı ama değer." }
         };
-        
+
         // Bulduğumuz sahte yorumları frontend'e gönderiyoruz.
         return Ok(fakeReviews);
     }

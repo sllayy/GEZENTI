@@ -1,9 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using GeziRotasi.API.Models;
 using GeziRotasi.API.Services;
-using System.Threading.Tasks;
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
 namespace GeziRotasi.API.Controllers
@@ -27,19 +27,22 @@ namespace GeziRotasi.API.Controllers
 
         [HttpGet]
         public async Task<IActionResult> GetPois(
-            [FromQuery] string? category, [FromQuery] string? searchTerm, 
-            [FromQuery] string? sortBy, [FromQuery(Name = "sort")] string? sortDirection, 
-            [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10,
-            [FromQuery] string? format = "json")
+            [FromQuery] string category,
+            [FromQuery] string searchTerm,
+            [FromQuery] string sortBy,
+            [FromQuery(Name = "sort")] string sortDirection,
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 10,
+            [FromQuery] string format = "json")
         {
             var pois = await _poiService.GetAllPoisAsync(category, searchTerm, sortBy, sortDirection, pageNumber, pageSize);
 
-            if (format?.Equals("geojson", StringComparison.OrdinalIgnoreCase) ?? false)
+            if (format.Equals("geojson", StringComparison.OrdinalIgnoreCase))
             {
                 var geoJson = _poiService.ConvertPoisToGeoJson(pois);
                 return Content(geoJson, "application/geo+json");
             }
-            
+
             return Ok(pois);
         }
 
@@ -62,10 +65,10 @@ namespace GeziRotasi.API.Controllers
         public async Task<IActionResult> UpdatePoi(int id, [FromBody] Poi updatedPoi)
         {
             if (id != updatedPoi.Id) return BadRequest("URL ID'si ile gövde ID'si eşleşmiyor.");
-            
+
             var existingPoi = await _poiService.GetPoiByIdAsync(id);
             if (existingPoi == null) return NotFound();
-            
+
             await _poiService.UpdatePoiAsync(id, updatedPoi);
             return NoContent();
         }
@@ -75,7 +78,7 @@ namespace GeziRotasi.API.Controllers
         {
             var existingPoi = await _poiService.GetPoiByIdAsync(id);
             if (existingPoi == null) return NotFound();
-            
+
             await _poiService.DeletePoiAsync(id);
             return NoContent();
         }
@@ -110,11 +113,13 @@ namespace GeziRotasi.API.Controllers
                 {
                     return Conflict("Bu mekan zaten sisteme eklenmiş.");
                 }
+
                 var osmElement = await _osmService.GetPlaceDetailsAsync(osmId);
                 if (osmElement == null)
                 {
                     return NotFound($"OSM'de {osmId} ID'li mekan bulunamadı.");
                 }
+
                 var createdPoi = await _poiService.ImportFromOsmAsync(osmElement);
                 return CreatedAtAction(nameof(GetPoiById), new { id = createdPoi.Id }, createdPoi);
             }
@@ -124,7 +129,7 @@ namespace GeziRotasi.API.Controllers
                 return StatusCode(500, "Veri işlenirken bir hata oluştu.");
             }
         }
-        
+
         // --- ÇALIŞMA SAATLERİ ENDPOINT'LERİ ---
 
         [HttpGet("{id:int}/workinghours")]

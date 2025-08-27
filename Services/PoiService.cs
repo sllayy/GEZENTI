@@ -24,7 +24,7 @@ namespace GeziRotasi.API.Services
 
         // --- OKUMA (READ) İŞLEMLERİ ---
 
-        public async Task<List<Poi>> GetAllPoisAsync(string? category, string? searchTerm, string? sortBy, string? sortDirection, int pageNumber = 1, int pageSize = 10)
+        public async Task<List<Poi>> GetAllPoisAsync(string category, string searchTerm, string sortBy, string sortDirection, int pageNumber = 1, int pageSize = 10)
         {
             var query = _context.Pois.AsQueryable();
 

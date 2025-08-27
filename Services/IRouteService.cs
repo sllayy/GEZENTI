@@ -1,8 +1,7 @@
-using GeziRotasi.API.Dtos; // DTO'ların bulunduğu doğru namespace
+using GeziRotasi.API.Dtos;
 using System.Threading;
 using System.Threading.Tasks;
 
-// Sadece bir tane, doğru ve tutarlı bir namespace olmalı.
 namespace GeziRotasi.API.Services
 {
     /// <summary>
