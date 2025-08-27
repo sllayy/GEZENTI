@@ -11,13 +11,14 @@ const Footer = () => {
                 Ücretsiz hesap oluşturun ve sınırsız rota planlama özelliğinin keyfini çıkarın
             </p>
             <div className="flex justify-center gap-4 flex-wrap">
-                <button className="flex items-center gap-2 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-transform transform hover:scale-105 px-6 py-3 rounded-lg font-semibold transition">
+                <button className="flex items-center gap-2 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transform transition hover:scale-105 px-6 py-3 rounded-lg font-semibold">
                     <FaUserPlus /> Ücretsiz Üye Ol
                 </button>
-                <button className="flex items-center gap-2 border border-white bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-transform transform hover:scale-105 px-6 py-3 rounded-lg font-semibold transition">
+                <button className="flex items-center gap-2 border border-white bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transform transition hover:scale-105 px-6 py-3 rounded-lg font-semibold">
                     <FaSignInAlt /> Giriş Yap
                 </button>
             </div>
+
         </div>
     );
 };
