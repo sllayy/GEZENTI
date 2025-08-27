@@ -1,4 +1,6 @@
+using GeziRotasi.API.Data;
 using GeziRotasi.API.Services;
+using Microsoft.EntityFrameworkCore;
 using Serilog;
 
 Log.Logger = new LoggerConfiguration()
