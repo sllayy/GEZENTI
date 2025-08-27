@@ -53,7 +53,7 @@ const Navbar = () => {
                         ) : (
                             <div className="flex items-center space-x-5">
                                 <Button label="Giriş Yap" className="p-button-text p-button-sm font-bold" />
-                                <Button label="Kayıt Ol" className="bg-blue-400 text-black font-bold  border-2  hover:bg-blue-500 rounded-lg p-button-sm px-4 py-2" />
+                                <Button label="Kayıt Ol" className=" bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-transform transform hover:scale-105 text-black font-bold  border-2   rounded-lg p-button-sm px-4 py-2" />
                             </div>
                         )}
                     </div>
