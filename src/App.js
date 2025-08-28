@@ -5,6 +5,7 @@ import Footer from './components/Layout/Footer'; // Remote'dan eklenen Footer bi
 import Main from './components/Main/main'; // Remote'dan eklenen Main bileşeni
 import MapComponent from './components/Map/MapComponent';
 import ProfilePage from './pages/ProfilePage';  // Remote'dan eklenen ProfilePage bileşeni
+import RouteBuilderPage from './pages/RouteBuilderPage';
 
 // Sayfalar
 import LoginPage from './pages/LoginPage';
@@ -27,26 +28,22 @@ function App() {
         <Navbar isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} />
 
         <main className="flex-grow">
-          <Routes>
-            {/* Ana sayfa ve Footer birlikte */}
-            <Route
-              path="/"
-              element={
-                <div>
-                  <Main />
-                  <Footer />
-                </div>
-              }
-            />
+         <Routes>
+  <Route path="/" element={
+    <div>
+      <Main />
+      <Footer />
+    </div>
+  } />
+  <Route path="/routes" element={<RoutesPage />} />
+  <Route path="/poi" element={<DiscoverPoi />} />
+  <Route path="/map" element={<MapComponent />} />
+  <Route path="/login" element={<LoginPage setIsLoggedIn={setIsLoggedIn} />} />
+  <Route path="/register" element={<RegisterPage setIsLoggedIn={setIsLoggedIn} />} />
+  <Route path="/profile" element={isLoggedIn ? <ProfilePage /> : <LoginPage setIsLoggedIn={setIsLoggedIn} />} />
+  <Route path="/route-builder" element={<RouteBuilderPage />} />
+</Routes>
 
-            <Route path="/routes" element={<RoutesPage />} />
-            <Route path="/poi" element={<DiscoverPoi />} />
-            <Route path="/map" element={<MapComponent />} />
-            <Route path="/route-builder" element={<RotaOlustur />} />
-            <Route path="/login" element={<LoginPage setIsLoggedIn={setIsLoggedIn} />} />
-            <Route path="/register" element={<RegisterPage setIsLoggedIn={setIsLoggedIn} />} />
-            <Route path="/profile" element={isLoggedIn ? <ProfilePage /> : <LoginPage setIsLoggedIn={setIsLoggedIn} />} />
-          </Routes>
         </main>
       </div>
     </Router>
