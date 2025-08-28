@@ -7,5 +7,6 @@ namespace GeziRotasi.API.Dtos
         public object Geometry { get; set; } = default!;
         public List<int>? WaypointOrder { get; set; }      
         public List<RouteVariantDto>? Alternatives { get; set; }
+        public bool PreferencesApplied { get; internal set; }
     }
 }
