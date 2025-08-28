@@ -3,3 +3,21 @@ obj/
 .vs/
 *.user
 GEZENTI/
+*.suo
+
+osrm-data/
+osm/
+*.osrm
+*.osrm.*
+*.pbf
+
+*.log
+logs/
+
+# User secrets (lokal ayarlar)
+appsettings.*.Local.json
+secrets.json
+
+# Docker runtime files
+docker/*.pid
+docker/*.log

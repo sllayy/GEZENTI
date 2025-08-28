@@ -1,0 +1,16 @@
+2025-08-27 16:44:42.171 +03:00 [INF] Uygulama başlatılıyor...
+2025-08-27 16:44:42.361 +03:00 [INF] Now listening on: https://localhost:7248
+2025-08-27 16:44:42.364 +03:00 [INF] Now listening on: http://localhost:5136
+2025-08-27 16:44:42.396 +03:00 [INF] Application started. Press Ctrl+C to shut down.
+2025-08-27 16:44:42.398 +03:00 [INF] Hosting environment: Development
+2025-08-27 16:44:42.399 +03:00 [INF] Content root path: C:\Users\mebalci\Desktop\Projeler\STAJ1\GEZENTI
+2025-08-27 16:44:42.670 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7248/swagger/index.html - null null
+2025-08-27 16:44:42.833 +03:00 [INF] HTTP GET /swagger/index.html responded 200 in 50.3694 ms
+2025-08-27 16:44:42.840 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7248/swagger/index.html - 200 null text/html;charset=utf-8 175.2744ms
+2025-08-27 16:44:42.841 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7248/_vs/browserLink - null null
+2025-08-27 16:44:42.841 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7248/_framework/aspnetcore-browser-refresh.js - null null
+2025-08-27 16:44:42.857 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7248/_framework/aspnetcore-browser-refresh.js - 200 16513 application/javascript; charset=utf-8 15.0768ms
+2025-08-27 16:44:42.889 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7248/_vs/browserLink - 200 null text/javascript; charset=UTF-8 47.6521ms
+2025-08-27 16:44:42.923 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7248/swagger/v1/swagger.json - null null
+2025-08-27 16:44:42.943 +03:00 [INF] HTTP GET /swagger/v1/swagger.json responded 200 in 18.5385 ms
+2025-08-27 16:44:42.945 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7248/swagger/v1/swagger.json - 200 null application/json;charset=utf-8 22.8016ms

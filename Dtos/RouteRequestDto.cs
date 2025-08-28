@@ -9,49 +9,26 @@ namespace GeziRotasi.API.Dtos
     /// </summary>
     public class RouteRequestDto
     {
-        /// <summary>
-        /// Ulaşım modu (örn: "driving", "walking", "cycling"). Varsayılan: "driving".
-        /// </summary>
-        [Required(ErrorMessage = "Ulaşım modu (mode) belirtilmelidir.")]
-        public string Mode { get; set; } = "driving";
-
-        /// <summary>
-        /// Rota oluşturulacak olan noktaların koordinat listesi.
-        /// Her bir eleman [boylam, enlem] formatında olmalıdır.
-        /// </summary>
-        [Required]
-        [MinLength(2, ErrorMessage = "Rota oluşturmak için en az 2 nokta gereklidir.")]
+        public string Mode { get; set; } = "driving"; // driving | foot
         public List<double[]> Coordinates { get; set; } = new();
 
-        /// <summary>
-        /// OSRM'e, verilen noktaların sırasını optimize edip etmeyeceğini söyler.
-        /// Varsayılan: true.
-        /// </summary>
-        public bool OptimizeOrder { get; set; } = true;
-
-        /// <summary>
-        /// Cevabın GeoJSON formatında olup olmayacağını belirtir.
-        /// Varsayılan: true.
-        /// </summary>
-        public bool GeoJson { get; set; } = true;
-
-        /// <summary>
-        /// Rotanın başlangıç noktasına geri dönüp dönmeyeceğini belirtir.
-        /// Varsayılan: false.
-        /// </summary>
+        // /trip mi /route mu?
+        public bool OptimizeOrder { get; set; } = false;
         public bool ReturnToStart { get; set; } = false;
 
-        /// <summary>
-        /// Yaya modunda otoyollardan kaçınılıp kaçınılmayacağını belirtir.
-        /// Varsayılan: true.
-        /// </summary>
-        public bool AvoidHighwaysOnFoot { get; set; } = true;    
-
-        /// <summary>
-        /// İstenen alternatif rota sayısı.
-        /// Varsayılan: 0 (alternatif yok).
-        /// </summary>
-        [Range(0, 3, ErrorMessage = "En fazla 3 alternatif rota istenebilir.")]
+        // /route için alternatif sayısı (0-3)
         public int Alternatives { get; set; } = 0;
+
+        // GeoJSON geometri istiyorsak
+        public bool GeoJson { get; set; } = true;        
+
+        // “NoRoute” vakalarını azaltmak için
+        public bool SnapToNetwork { get; set; } = true;
+
+        // alternatives dönerse birincil seçimi etkiler: fastest|shortest|balanced
+        public string? Preference { get; set; } = "fastest";
+
+        // nearest için yarıçaplar (metre); opsiyonel
+        public int[]? Radiuses { get; set; }
     }
 }

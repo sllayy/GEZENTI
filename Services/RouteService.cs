@@ -1,14 +1,7 @@
-using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
-using System.Net.Http;
+using System.Text;
 using System.Text.Json;
-using System.Threading;
-using System.Threading.Tasks;
 using GeziRotasi.API.Dtos;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 
 namespace GeziRotasi.API.Services
 {
@@ -16,122 +9,223 @@ namespace GeziRotasi.API.Services
     {
         private readonly HttpClient _httpClient;
         private readonly IConfiguration _config;
-        private readonly ILogger<RouteService> _logger;
-        private readonly string _osrmBaseUrl;
+        private readonly ILogger<RouteService> _logger;      
 
         public RouteService(HttpClient httpClient, IConfiguration config, ILogger<RouteService> logger)
         {
             _httpClient = httpClient;
             _config = config;
             _logger = logger;
-            _osrmBaseUrl = (_config["Osrm:BaseUrl"] ?? "https://router.project-osrm.org").TrimEnd('/');
         }
 
         public async Task<RouteResponseDto> GetOptimizedRouteAsync(RouteRequestDto request, CancellationToken ct = default)
         {
             if (request.Coordinates is null || request.Coordinates.Count < 2)
-                throw new ArgumentException("Rota optimizasyonu için en az iki koordinat gereklidir.");
+                throw new ArgumentException("En az iki koordinat gerekli.");
 
             var mode = NormalizeMode(request.Mode);
-            var url = BuildOsrmUrl(request, mode);
+            var baseUrl = (_config["Osrm:BaseUrl"] ?? "http://localhost:8081").TrimEnd('/');
+                        
+            List<double[]> coordsUse = request.Coordinates;
+            string?[] hints = Array.Empty<string?>();
+            if (request.SnapToNetwork)
+            {
+                var radiuses = BuildRadiuses(request);
+                (coordsUse, hints) = await SnapIfNeededAsync(baseUrl, mode, request.Coordinates, radiuses, ct);
+            }
+
+            var coords = string.Join(";", coordsUse.Select(c =>
+                $"{c[0].ToString(CultureInfo.InvariantCulture)},{c[1].ToString(CultureInfo.InvariantCulture)}"));
+
+            var geometries = request.GeoJson ? "geojson" : "polyline";
+                     
+
+            var url = BuildOsrmUrl(baseUrl, mode, coords, geometries, request, hints);
 
             _logger.LogInformation("OSRM URL: {Url}", url);
 
-            var body = await FetchOsrmDataAsync(url, ct);
+            using var resp = await _httpClient.GetAsync(url, ct);
+            var body = await resp.Content.ReadAsStringAsync(ct);            
 
-            return ParseOsrmResponse(body, request.OptimizeOrder);
+            if (!resp.IsSuccessStatusCode)
+                throw new InvalidOperationException($"OSRM {(int)resp.StatusCode} {resp.ReasonPhrase}. Body: {Truncate(body, 500)}");
+
+            return ParseOsrm(body, request);
         }
 
-        // --- YARDIMCI METOTLAR ---
-
-        private string BuildOsrmUrl(RouteRequestDto request, string mode)
+        private string BuildOsrmUrl(
+            string baseUrl, string mode, string coords, string geometries,
+            RouteRequestDto request, string?[] hints)
         {
-            var coords = string.Join(";",
-                request.Coordinates.Select(c =>
-                    $"{c[0].ToString(CultureInfo.InvariantCulture)},{c[1].ToString(CultureInfo.InvariantCulture)}"));
-
-            var geometries = request.GeoJson ? "geojson" : "polyline";
+            
+            string hintsParam = "";
+            if (hints.Length == request.Coordinates.Count && hints.All(h => !string.IsNullOrEmpty(h)))
+            {
+                var enc = string.Join(";", hints.Select(Uri.EscapeDataString));
+                hintsParam = $"&hints={enc}";
+            }
 
             if (request.OptimizeOrder)
             {
                 var roundtrip = request.ReturnToStart ? "true" : "false";
-                var tail = $"overview=full&geometries={geometries}&roundtrip={roundtrip}&source=first";
-                if (!request.ReturnToStart) tail += "&destination=last";
-                return $"{_osrmBaseUrl}/trip/v1/{mode}/{coords}?{tail}";
+                var tail = new StringBuilder($"overview=full&geometries={geometries}&roundtrip={roundtrip}&source=first");
+                if (!request.ReturnToStart) tail.Append("&destination=last");
+                if (!string.IsNullOrEmpty(hintsParam)) tail.Append(hintsParam);
+
+                return $"{baseUrl}/trip/v1/{mode}/{coords}?{tail}";
             }
             else
             {
-                var query = $"overview=full&geometries={geometries}";
-                if (request.Alternatives > 0) query += $"&alternatives={Math.Min(request.Alternatives, 3)}";
-                if (mode == "foot" && request.AvoidHighwaysOnFoot)
-                    query += "&exclude=motorway,trunk,primary,secondary,tertiary";
+                var sb = new StringBuilder($"overview=full&geometries={geometries}");
+                if (request.Alternatives > 0) sb.Append($"&alternatives={Math.Min(request.Alternatives, 3)}");                
+                if (!string.IsNullOrEmpty(hintsParam)) sb.Append(hintsParam);
 
-                return $"{_osrmBaseUrl}/route/v1/{mode}/{coords}?{query}";
+                return $"{baseUrl}/route/v1/{mode}/{coords}?{sb}";
             }
         }
 
-        private async Task<string> FetchOsrmDataAsync(string url, CancellationToken ct)
+        private async Task<(List<double[]>, string?[])> SnapIfNeededAsync(
+            string baseUrl, string mode, List<double[]> coords, int[] radiuses, CancellationToken ct)
         {
-            using var response = await _httpClient.GetAsync(url, ct);
-            var body = await response.Content.ReadAsStringAsync(ct);
+            var snapped = new List<double[]>(coords.Count);
+            var hints = new string?[coords.Count];
 
-            if (!response.IsSuccessStatusCode)
+            for (int i = 0; i < coords.Count; i++)
             {
-                _logger.LogWarning("OSRM {Code} ile yanıt verdi. Body: {Body}",
-                    (int)response.StatusCode, Truncate(body, 200));
-                throw new InvalidOperationException(
-                    $"OSRM {(int)response.StatusCode} {response.ReasonPhrase}. Body: {Truncate(body, 500)}");
+                var lon = coords[i][0].ToString(CultureInfo.InvariantCulture);
+                var lat = coords[i][1].ToString(CultureInfo.InvariantCulture);
+                var url = $"{baseUrl}/nearest/v1/{mode}/{lon},{lat}?number=1";
+                if (radiuses[i] > 0) url += $"&radiuses={radiuses[i]}";
+
+                using var resp = await _httpClient.GetAsync(url, ct);
+                resp.EnsureSuccessStatusCode();
+                using var doc = JsonDocument.Parse(await resp.Content.ReadAsStringAsync(ct));
+                var wp = doc.RootElement.GetProperty("waypoints")[0];
+
+                var loc = wp.GetProperty("location");
+                snapped.Add(new[] { loc[0].GetDouble(), loc[1].GetDouble() });
+
+                if (wp.TryGetProperty("hint", out var h) && h.ValueKind == JsonValueKind.String)
+                    hints[i] = h.GetString();
             }
 
-            return body;
+            return (snapped, hints);
         }
 
-        private RouteResponseDto ParseOsrmResponse(string body, bool isTrip)
+        private int[] BuildRadiuses(RouteRequestDto req)
+        {
+            var n = req.Coordinates.Count;
+            var def = 200;
+            if (req.Radiuses == null || req.Radiuses.Length == 0)
+                return Enumerable.Repeat(def, n).ToArray();
+
+            var arr = new int[n];
+            for (int i = 0; i < n; i++)
+                arr[i] = (i < req.Radiuses.Length && req.Radiuses[i] > 0) ? req.Radiuses[i] : def;
+            return arr;
+        }
+
+        private RouteResponseDto ParseOsrm(string body, RouteRequestDto request)
         {
             using var doc = JsonDocument.Parse(body);
             var root = doc.RootElement;
-            var propertyName = isTrip ? "trips" : "routes";
 
-            if (!root.TryGetProperty(propertyName, out var items) ||
-                items.ValueKind != JsonValueKind.Array ||
-                items.GetArrayLength() == 0)
-                throw new InvalidOperationException($"OSRM {propertyName} yanıtı beklenen formatta değil veya boş.");
-
-            var item = items[0];
-            var distance = item.GetProperty("distance").GetDouble();
-            var duration = item.GetProperty("duration").GetDouble();
-            var geometry = item.GetProperty("geometry").Clone();
-
-            List<int>? waypointOrder = null;
-            if (isTrip && root.TryGetProperty("waypoints", out var wps) && wps.ValueKind == JsonValueKind.Array)
+            if (request.OptimizeOrder)
             {
-                waypointOrder = wps.EnumerateArray()
-                                   .Select(w => w.TryGetProperty("waypoint_index", out var idx) ? idx.GetInt32() : -1)
-                                   .Where(i => i != -1)
-                                   .ToList();
+                if (!root.TryGetProperty("trips", out var trips) || trips.ValueKind != JsonValueKind.Array || trips.GetArrayLength() == 0)
+                    throw new InvalidOperationException("OSRM trip yanıtı beklenen formatta değil.");
+
+                var trip = trips[0];
+                var distance = trip.GetProperty("distance").GetDouble();
+                var duration = trip.GetProperty("duration").GetDouble();
+                var geometry = trip.GetProperty("geometry");
+
+                List<int>? order = null;
+                if (root.TryGetProperty("waypoints", out var wps) && wps.ValueKind == JsonValueKind.Array)
+                {
+                    order = new List<int>(wps.GetArrayLength());
+                    foreach (var w in wps.EnumerateArray())
+                        if (w.TryGetProperty("waypoint_index", out var idx) && idx.ValueKind == JsonValueKind.Number)
+                            order.Add(idx.GetInt32());
+                }
+
+                return new RouteResponseDto
+                {
+                    Distance = distance,
+                    Duration = duration,
+                    Geometry = geometry.Clone(),
+                    WaypointOrder = order,
+                    Alternatives = null
+                };
             }
-
-            return new RouteResponseDto
+            else
             {
-                Distance = distance,
-                Duration = duration,
-                Geometry = geometry,
-                WaypointOrder = waypointOrder
-            };
+                if (!root.TryGetProperty("routes", out var routes) || routes.ValueKind != JsonValueKind.Array || routes.GetArrayLength() == 0)
+                    throw new InvalidOperationException("OSRM route yanıtı beklenen formatta değil.");
+                               
+                var pref = (request.Preference ?? "fastest").Trim().ToLowerInvariant();
+                var (primaryIdx, all) = PickPrimaryByPreference(routes, pref, request.GeoJson);
+                var primary = routes[primaryIdx];
+
+                return new RouteResponseDto
+                {
+                    Distance = primary.GetProperty("distance").GetDouble(),
+                    Duration = primary.GetProperty("duration").GetDouble(),
+                    Geometry = primary.GetProperty("geometry").Clone(),
+                    WaypointOrder = null,
+                    Alternatives = all
+                };
+            }
+        }
+
+        private static (int primaryIdx, List<RouteVariantDto> all) PickPrimaryByPreference(
+            JsonElement routes, string pref, bool geoJson)
+        {
+            int n = routes.GetArrayLength();
+            var list = new List<RouteVariantDto>(n);
+            int best = 0;
+            double bestScore = double.MaxValue;
+
+            for (int i = 0; i < n; i++)
+            {
+                var r = routes[i];
+                var dist = r.GetProperty("distance").GetDouble();
+                var dur = r.GetProperty("duration").GetDouble();
+                object geom = r.GetProperty("geometry").Clone();
+
+                list.Add(new RouteVariantDto
+                {
+                    Distance = dist,
+                    Duration = dur,
+                    Geometry = geom,
+                    IsPrimary = false
+                });
+
+                double score = pref switch
+                {
+                    "shortest" => dist,
+                    "balanced" => dist * 0.5 + dur * 0.5,
+                    _ => dur 
+                };
+                if (score < bestScore) { bestScore = score; best = i; }
+            }
+            list[best].IsPrimary = true;
+            return (best, list);
         }
 
         private static string NormalizeMode(string mode)
         {
-            return (mode?.Trim().ToLowerInvariant()) switch
+            if (string.IsNullOrWhiteSpace(mode)) return "driving";
+            return mode.Trim().ToLowerInvariant() switch
             {
                 "car" or "driving" => "driving",
                 "foot" or "walk" or "walking" => "foot",
-                "bike" or "bicycle" or "cycling" => "cycling",
                 _ => "driving"
             };
         }
 
-        private static string Truncate(string s, int max)
-            => s.Length <= max ? s : s[..max] + "...";
+        private static string Truncate(string s, int max) => s.Length <= max ? s : s[..max] + "...";
+
+
     }
 }
