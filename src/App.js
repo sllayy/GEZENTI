@@ -9,8 +9,8 @@ import RouteBuilderPage from './pages/RouteBuilderPage';
 import NotFound from './pages/NotFound';
 // Sayfalar
 import LoginPage from './pages/LoginPage.js';
-import RegisterPage from './pages/RegisterPage.js';
-import RoutesPage from './pages/RoutesPage';
+import RegisterPage from './pages/RegisterPage.jsx';
+import RoutesPage from './pages/RoutesPage.jsx';
 import DiscoverPoi from './pages/DiscoverPoiPage.jsx';
 
 function App() {

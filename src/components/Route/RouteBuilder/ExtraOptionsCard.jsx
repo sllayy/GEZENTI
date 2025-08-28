@@ -5,15 +5,15 @@ import { Card } from 'primereact/card';
 import { Checkbox } from 'primereact/checkbox';
 import { Dropdown } from 'primereact/dropdown';
 
-const ExtraOptionsCard = ({ 
-    considerTraffic, 
-    setConsiderTraffic, 
-    shortestRoute, 
-    setShortestRoute, 
+const ExtraOptionsCard = ({
+    considerTraffic,
+    setConsiderTraffic,
+    shortestRoute,
+    setShortestRoute,
     // accessibleRoute ve setAccessibleRoute kaldırıldı
-    
+
     crowdPreference,
-    setCrowdPreference 
+    setCrowdPreference
 }) => {
 
     // Kalabalık seçenekleri güncellendi
@@ -21,7 +21,7 @@ const ExtraOptionsCard = ({
         { label: '0 - Çok Sakin (Doğa Yürüyüşleri)', value: 0, icon: 'pi pi-cloud' }, // Açıklamaları zenginleştirdim
         { label: '1 - Sakin (Parklar, Müzeler)', value: 1, icon: 'pi pi-sun' },
         { label: '2 - Normal (Şehir Merkezleri, Alışveriş)', value: 2, icon: 'pi pi-users' },
-        { label: '3 - Hareketli (Festivaller, Canlı Mekanlar)', value: 3, icon: 'pi pi-chart-line' } 
+        { label: '3 - Hareketli (Festivaller, Canlı Mekanlar)', value: 3, icon: 'pi pi-chart-line' }
     ];
 
 
@@ -34,43 +34,44 @@ const ExtraOptionsCard = ({
                         Ek Seçenekler
                     </h2>
                 </div>
-                
+
                 <div className="space-y-3">
                     <div className="flex items-center justify-between p-3 border rounded-lg">
                         <div className="flex items-center">
                             <i className="pi pi-exclamation-triangle mr-3 text-orange-500"></i>
                             <span className="font-medium">Trafik durumunu dikkate al</span>
                         </div>
-                        <Checkbox 
-                            checked={considerTraffic} 
-                            onChange={(e) => setConsiderTraffic(e.checked)} 
+                        <Checkbox
+                            checked={considerTraffic}
+                            onChange={(e) => setConsiderTraffic(e.checked)}
                         />
                     </div>
-                    
+
                     <div className="flex items-center justify-between p-3 border rounded-lg">
                         <div className="flex items-center">
                             <i className="pi pi-map-marker mr-3 text-green-500"></i>
                             <span className="font-medium">En kısa rotayı öncelikle</span>
                         </div>
-                        <Checkbox 
-                            checked={shortestRoute} 
-                            onChange={(e) => setShortestRoute(e.checked)} 
+                        <Checkbox
+                            checked={shortestRoute}
+                            onChange={(e) => setShortestRoute(e.checked)}
                         />
                     </div>
-                    
+
                     {/* Kalabalık Tercihi Dropdown'ı (sayısal değerler) */}
                     <div className="flex items-center justify-between p-3 border rounded-lg">
                         <div className="flex items-center">
                             <i className="pi pi-user-plus mr-3 text-purple-500"></i>
                             <span className="font-medium">Kalabalık tercihi</span>
                         </div>
-                        <Dropdown 
-                            value={crowdPreference} 
-                            options={crowdOptions} 
-                            onChange={(e) => setCrowdPreference(e.value)} 
-                            optionLabel="label" 
+                        <Dropdown
+                            value={crowdPreference}
+                            options={crowdOptions}
+                            onChange={(e) => setCrowdPreference(e.value)}
+                            optionLabel="label"
                             placeholder="Tercih Seçin"
                             className="w-full md:w-14rem"
+                            appendTo="self"
                             itemTemplate={(option) => (
                                 <div className="flex align-items-center">
                                     <i className={`${option.icon} mr-2`} />
@@ -79,8 +80,7 @@ const ExtraOptionsCard = ({
                             )}
                         />
                     </div>
-                    
-                    {/* Engelli dostu rota kısmı tamamen kaldırıldı */}
+
                 </div>
             </div>
         </Card>
