@@ -11,8 +11,11 @@
         Alışveriş,
         Park,
         Müze,
-        Restoran,
-        Tarihi_Yapı, // Türkçe karakterler yerine Ingilizce karakterler kullanmak daha güvenlidir.
-        Genel
+        Restoran,        
+        Genel,
+        Sanat,
+        Doğa,
+        Eğlence,
+        Müzik
     }
 }

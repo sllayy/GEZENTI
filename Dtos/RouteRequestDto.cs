@@ -30,6 +30,6 @@ namespace GeziRotasi.API.Dtos
 
         // nearest için yarıçaplar (metre); opsiyonel
         public int[]? Radiuses { get; set; }
-        public object UserId { get; internal set; }
+        public int UserId { get; set; }
     }
 }
