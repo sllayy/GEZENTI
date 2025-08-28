@@ -9,7 +9,7 @@ namespace GeziRotasi.API.Services
     {
         private readonly HttpClient _httpClient;
         private readonly IConfiguration _config;
-        private readonly ILogger<RouteService> _logger;      
+        private readonly ILogger<RouteService> _logger;
 
         public RouteService(HttpClient httpClient, IConfiguration config, ILogger<RouteService> logger)
         {
@@ -25,7 +25,8 @@ namespace GeziRotasi.API.Services
 
             var mode = NormalizeMode(request.Mode);
             var baseUrl = (_config["Osrm:BaseUrl"] ?? "http://localhost:8081").TrimEnd('/');
-                        
+
+            // Snap-to-network (önerilen)
             List<double[]> coordsUse = request.Coordinates;
             string?[] hints = Array.Empty<string?>();
             if (request.SnapToNetwork)
@@ -38,14 +39,34 @@ namespace GeziRotasi.API.Services
                 $"{c[0].ToString(CultureInfo.InvariantCulture)},{c[1].ToString(CultureInfo.InvariantCulture)}"));
 
             var geometries = request.GeoJson ? "geojson" : "polyline";
-                     
 
-            var url = BuildOsrmUrl(baseUrl, mode, coords, geometries, request, hints);
+            string exclude = "";
+            if (mode == "foot" && request.AvoidHighwaysOnFoot)
+            {
+                // foot.lua zaten otoyola girmez; yine de kalsın (opsiyonel)
+                exclude = "motorway,trunk,primary,secondary,tertiary";
+            }
+
+            var url = BuildOsrmUrl(baseUrl, mode, coords, geometries, request, exclude, hints);
 
             _logger.LogInformation("OSRM URL: {Url}", url);
 
             using var resp = await _httpClient.GetAsync(url, ct);
-            var body = await resp.Content.ReadAsStringAsync(ct);            
+            var body = await resp.Content.ReadAsStringAsync(ct);
+
+            if (!resp.IsSuccessStatusCode && !string.IsNullOrEmpty(exclude))
+            {
+                _logger.LogWarning("OSRM {Code}. Exclude ile başarısız oldu, excludesiz yeniden deniyorum. Body: {Body}",
+                    (int)resp.StatusCode, Truncate(body, 200));
+
+                var urlNoEx = url.Replace($"&exclude={exclude}", "").Replace($"?exclude={exclude}&", "?");
+                using var resp2 = await _httpClient.GetAsync(urlNoEx, ct);
+                body = await resp2.Content.ReadAsStringAsync(ct);
+                if (!resp2.IsSuccessStatusCode)
+                    throw new InvalidOperationException($"OSRM {(int)resp2.StatusCode} {resp2.ReasonPhrase}. Body: {Truncate(body, 500)}");
+
+                return ParseOsrm(body, request);
+            }
 
             if (!resp.IsSuccessStatusCode)
                 throw new InvalidOperationException($"OSRM {(int)resp.StatusCode} {resp.ReasonPhrase}. Body: {Truncate(body, 500)}");
@@ -55,9 +76,9 @@ namespace GeziRotasi.API.Services
 
         private string BuildOsrmUrl(
             string baseUrl, string mode, string coords, string geometries,
-            RouteRequestDto request, string?[] hints)
+            RouteRequestDto request, string exclude, string?[] hints)
         {
-            
+            // hints parametresi: yalnızca tümü doluysa ekleyelim (aksi halde boş/; hatası olur)
             string hintsParam = "";
             if (hints.Length == request.Coordinates.Count && hints.All(h => !string.IsNullOrEmpty(h)))
             {
@@ -77,7 +98,8 @@ namespace GeziRotasi.API.Services
             else
             {
                 var sb = new StringBuilder($"overview=full&geometries={geometries}");
-                if (request.Alternatives > 0) sb.Append($"&alternatives={Math.Min(request.Alternatives, 3)}");                
+                if (request.Alternatives > 0) sb.Append($"&alternatives={Math.Min(request.Alternatives, 3)}");
+                if (!string.IsNullOrEmpty(exclude)) sb.Append($"&exclude={exclude}");
                 if (!string.IsNullOrEmpty(hintsParam)) sb.Append(hintsParam);
 
                 return $"{baseUrl}/route/v1/{mode}/{coords}?{sb}";
@@ -115,7 +137,7 @@ namespace GeziRotasi.API.Services
         private int[] BuildRadiuses(RouteRequestDto req)
         {
             var n = req.Coordinates.Count;
-            var def = 200;
+            var def = 200; // makul varsayılan
             if (req.Radiuses == null || req.Radiuses.Length == 0)
                 return Enumerable.Repeat(def, n).ToArray();
 
@@ -162,7 +184,8 @@ namespace GeziRotasi.API.Services
             {
                 if (!root.TryGetProperty("routes", out var routes) || routes.ValueKind != JsonValueKind.Array || routes.GetArrayLength() == 0)
                     throw new InvalidOperationException("OSRM route yanıtı beklenen formatta değil.");
-                               
+
+                // Alternatives + preference ile birincil seçimi yap
                 var pref = (request.Preference ?? "fastest").Trim().ToLowerInvariant();
                 var (primaryIdx, all) = PickPrimaryByPreference(routes, pref, request.GeoJson);
                 var primary = routes[primaryIdx];
@@ -205,7 +228,7 @@ namespace GeziRotasi.API.Services
                 {
                     "shortest" => dist,
                     "balanced" => dist * 0.5 + dur * 0.5,
-                    _ => dur 
+                    _ => dur // fastest
                 };
                 if (score < bestScore) { bestScore = score; best = i; }
             }
@@ -220,12 +243,10 @@ namespace GeziRotasi.API.Services
             {
                 "car" or "driving" => "driving",
                 "foot" or "walk" or "walking" => "foot",
-                _ => "driving"
+                _ => "driving" // cycling ENGEÇERLI DEĞİL
             };
         }
 
         private static string Truncate(string s, int max) => s.Length <= max ? s : s[..max] + "...";
-
-
     }
 }
