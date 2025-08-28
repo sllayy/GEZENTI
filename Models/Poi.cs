@@ -24,24 +24,24 @@ namespace GeziRotasi.API.Models
         // Category artık TEK BİR TANE ve doğru tipte: PoiCategory enum
         public PoiCategory Category { get; set; }
 
-        public string? ExternalApiId { get; set; }
+        public string ExternalApiId { get; set; }
 
         [StringLength(255)]
-        public string? OpeningHours { get; set; }
+        public string OpeningHours { get; set; }
 
         [StringLength(255)]
-        public string? Website { get; set; }
+        public string Website { get; set; }
 
         [StringLength(50)]
-        public string? PhoneNumber { get; set; }
+        public string PhoneNumber { get; set; }
 
         [StringLength(100)]
-        public string? GirisUcreti { get; set; }
+        public string GirisUcreti { get; set; }
 
         public int? OrtalamaZiyaretSuresi { get; set; }
 
         [StringLength(500)]
-        public string? ImageUrl { get; set; }
+        public string ImageUrl { get; set; }
 
         // --- İLİŞKİLER ---
         // ICollection<> kullanmak için "using System.Collections.Generic;" gereklidir.

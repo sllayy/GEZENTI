@@ -1,3 +1,4 @@
+#nullable enable
 using System.Collections.Generic; // List<> kullanabilmek için gerekli.
 using System.ComponentModel.DataAnnotations; // Validasyon kuralları için gerekli.
 
@@ -20,13 +21,13 @@ namespace GeziRotasi.API.Dtos
         public int Alternatives { get; set; } = 0;
 
         // GeoJSON geometri istiyorsak
-        public bool GeoJson { get; set; } = true;        
+        public bool GeoJson { get; set; } = true;
 
         // “NoRoute” vakalarını azaltmak için
         public bool SnapToNetwork { get; set; } = true;
 
         // alternatives dönerse birincil seçimi etkiler: fastest|shortest|balanced
-        public string? Preference { get; set; } = "fastest";
+        public string Preference { get; set; } = "fastest";
 
         // nearest için yarıçaplar (metre); opsiyonel
         public int[]? Radiuses { get; set; }

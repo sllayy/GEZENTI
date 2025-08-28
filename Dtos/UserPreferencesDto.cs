@@ -24,7 +24,6 @@ public class UserPreferencesDto
 
     /// <summary>
     /// Kullanıcının seçtiği ilgi alanı temalarının listesi (örn: ["Sanat", "Tarih"]).
-    /// Veritabanındaki string formattan (virgülle ayrılmış) List<string>'e dönüştürülmüştür.
     /// </summary>
     public List<string> PreferredThemes { get; set; } = new List<string>();
 

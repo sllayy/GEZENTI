@@ -11,7 +11,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- Entity Framework Core - Projemiz .NET 8.0 olduğu için TÜMÜ 8.x versiyonunda olmalı -->
+    <!-- Entity Framework Core -->
+    <PackageReference Include="FirebaseAdmin" Version="3.3.0" />
+    <PackageReference Include="MailKit" Version="4.13.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.8" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.8" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.8" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.8">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -21,17 +25,26 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.4" /> <!-- 8.0.8'den daha yeni bir 8.x versiyonu varsa o da olur, ama 8.0.4 de çalışır -->
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="9.0.8" />
+    <PackageReference Include="MimeKit" Version="4.13.0" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.4" />
 
     <!-- Harita ve GeoJSON için -->
     <PackageReference Include="NetTopologySuite.IO.GeoJSON" Version="4.0.0" />
 
     <!-- Loglama için -->
     <PackageReference Include="Serilog.AspNetCore" Version="8.0.1" />
-    <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" /> <!-- 7.0.0 versiyonu .NET 9 uyumlu olabilir, 5.0.0 en stabilidir -->
+    <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
     
     <!-- API Dokümantasyonu için -->
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Firebase credential dosyasını her build'de output'a kopyala -->
+    <None Update="firebase-adminsdk.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

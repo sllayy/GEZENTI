@@ -1,3 +1,4 @@
+#nullable enable
 using GeziRotasi.API.Data;
 using GeziRotasi.API.Dtos;
 using GeziRotasi.API.Models;

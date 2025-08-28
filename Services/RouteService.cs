@@ -1,3 +1,4 @@
+#nullable enable
 using System.Globalization;
 using System.Text;
 using System.Text.Json;
@@ -133,7 +134,7 @@ namespace GeziRotasi.API.Services
             var response = ParseOsrm(body, request.OptimizeOrder);
             response.PreferencesApplied = prefs is not null;
             return response;
-        }         
+        }
 
         private string BuildOsrmUrl(string mode, string coordsString, RouteRequestDto request)
         {
@@ -149,7 +150,7 @@ namespace GeziRotasi.API.Services
             else
             {
                 var query = $"overview=full&geometries={geometries}";
-                if (request.Alternatives > 0) query += $"&alternatives={Math.Min(request.Alternatives, 3)}";                
+                if (request.Alternatives > 0) query += $"&alternatives={Math.Min(request.Alternatives, 3)}";
 
                 return $"{_osrmBaseUrl}/route/v1/{mode}/{coordsString}?{query}";
             }
@@ -207,7 +208,7 @@ namespace GeziRotasi.API.Services
             {
                 "car" or "driving" => "driving",
                 "foot" or "walk" or "walking" => "foot",
-                _ => "driving"  
+                _ => "driving"
             };
         }
 
