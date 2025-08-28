@@ -3,9 +3,8 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from 'primereact/button';
 import { Avatar } from 'primereact/avatar';
 
-
-// isLoggedIn ve setIsLoggedIn state'leri artık App.js'ten prop olarak geliyor.
-const Navbar = ({ isLoggedIn, setIsLoggedIn }) => {
+// isLoggedIn, setIsLoggedIn ve userName state'leri App.js'ten prop olarak geliyor.
+const Navbar = ({ isLoggedIn, setIsLoggedIn, userName }) => {
     const location = useLocation();
     const navigate = useNavigate();
 
@@ -13,6 +12,12 @@ const Navbar = ({ isLoggedIn, setIsLoggedIn }) => {
     const handleLogout = () => {
         setIsLoggedIn(false); // Uygulama genelindeki giriş durumunu 'false' yap
         navigate('/');        // Kullanıcıyı ana sayfaya yönlendir
+    };
+
+    // Kullanıcı adının ilk harfini alma
+    const getInitial = (name) => {
+        if (!name) return "";
+        return name.charAt(0).toUpperCase();
     };
 
     // Navigasyon linklerinin listesi
@@ -42,11 +47,10 @@ const Navbar = ({ isLoggedIn, setIsLoggedIn }) => {
                             <Link
                                 key={item.path}
                                 to={item.path}
-                                className={`text-sm font-medium transition-colors hover:text-blue-600 ${
-                                    location.pathname === item.path
+                                className={`text-sm font-medium transition-colors hover:text-blue-600 ${location.pathname === item.path
                                         ? 'text-blue-600 border-b-2 border-blue-600'
                                         : 'text-gray-500'
-                                }`}
+                                    }`}
                             >
                                 {item.label}
                             </Link>
@@ -58,42 +62,42 @@ const Navbar = ({ isLoggedIn, setIsLoggedIn }) => {
                         {isLoggedIn ? (
                             // Kullanıcı giriş yapmışsa bu bölüm gösterilir
                             <div className="flex items-center space-x-3">
-                                <Avatar 
-                                    label="T" // Gerçek projede kullanıcının baş harfi olabilir
-                                    shape="circle" 
-                                    size="large" 
-                                    className="bg-blue-500 text-white" 
+                                <Avatar
+                                    label={getInitial(userName)} // Kullanıcı isminin ilk harfi
+                                    shape="circle"
+                                    size="large"
+                                    className="bg-blue-500 text-white cursor-pointer"
+                                    onClick={() => navigate("/profile")} // Profil sayfasına yönlendirme
                                 />
-                                <Button 
-                                    label="Çıkış Yap" 
-                                    icon="pi pi-sign-out" 
-                                    className="p-button-text p-button-sm font-bold text-red-500" 
-                                    onClick={handleLogout} 
+                                <Button
+                                    label="Çıkış Yap"
+                                    icon="pi pi-sign-out"
+                                    className="p-button-text p-button-sm font-bold text-red-500"
+                                    onClick={handleLogout}
                                 />
                             </div>
                         ) : (
                             // Kullanıcı giriş yapmamışsa bu bölüm gösterilir
                             <div className="flex items-center space-x-5">
                                 <Link to="/login">
-                                    <Button 
-                                        label="Giriş Yap" 
-                                        className="p-button-text p-button-sm font-bold" 
+                                    <Button
+                                        label="Giriş Yap"
+                                        className="p-button-text p-button-sm font-bold"
                                     />
                                 </Link>
                                 <Link to="/register">
-                                    <Button 
-                                        label="Kayıt Ol" 
-                                        className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-transform transform hover:scale-105 text-black font-bold border-2 rounded-lg p-button-sm px-4 py-2" 
+                                    <Button
+                                        label="Kayıt Ol"
+                                        className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-transform transform hover:scale-105 text-black font-bold border-2 rounded-lg p-button-sm px-4 py-2"
                                     />
                                 </Link>
                             </div>
                         )}
                     </div>
                 </div>
-                
             </div>
         </nav>
     );
 };
- 
+
 export default Navbar;

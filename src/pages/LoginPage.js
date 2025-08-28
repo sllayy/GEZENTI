@@ -27,7 +27,7 @@ const LoginPage = ({ setIsLoggedIn }) => {
 
     // Normal e-posta/şifre girişi (geçici)
     const handleLogin = (e) => {
-        e.preventDefault(); 
+        e.preventDefault();
         if (email === "test@gezenti.com" && password === "12345") {
             setIsLoggedIn(true);
             navigate('/');
@@ -41,13 +41,13 @@ const LoginPage = ({ setIsLoggedIn }) => {
         try {
             const result = await signInWithPopup(auth, googleProvider);
             const token = await result.user.getIdToken();
-            
+
             // Backend ile konuşmak için gereken token'ı tarayıcı hafızasına kaydediyoruz.
             localStorage.setItem("authToken", token);
 
             // Uygulamanın genel state'ini güncelliyoruz.
             setIsLoggedIn(true);
-            
+
             // Kullanıcıyı ana sayfaya yönlendiriyoruz.
             navigate('/');
         } catch (error) {
@@ -59,7 +59,7 @@ const LoginPage = ({ setIsLoggedIn }) => {
 
     return (
         <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-teal-50 via-cyan-50 to-blue-100 p-4 font-sans">
-            
+
             <div className="text-center mb-8">
                 <img src="/LOGO2.png" alt="Gezenti Logo" className="h-16 w-16 mx-auto mb-4 rounded-full shadow-lg" />
                 <h1 className="text-4xl font-bold text-gray-800">
@@ -77,15 +77,15 @@ const LoginPage = ({ setIsLoggedIn }) => {
                         Hesabınıza giriş yapın ve rotalarınızı keşfetmeye devam edin
                     </p>
                 </div>
-                
+
                 <form className="space-y-6" onSubmit={handleLogin}>
                     <div>
                         <label htmlFor="email" className="text-sm font-medium text-gray-700">
                             E-posta
                         </label>
-                        <InputText 
-                            id="email" 
-                            value={email} 
+                        <InputText
+                            id="email"
+                            value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             className="w-full mt-1 p-inputtext-lg"
                             placeholder="ornek@email.com"
@@ -96,7 +96,7 @@ const LoginPage = ({ setIsLoggedIn }) => {
                         <label htmlFor="password" className="text-sm font-medium text-gray-700">
                             Şifre
                         </label>
-                        <Password 
+                        <Password
                             inputId="password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
@@ -117,9 +117,9 @@ const LoginPage = ({ setIsLoggedIn }) => {
                             Şifremi unuttum
                         </a>
                     </div>
-                    
+
                     <div>
-                         <button type="submit" className="w-full flex justify-center items-center px-4 py-3 border border-transparent text-base font-medium rounded-md text-white bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-transform transform hover:scale-105">
+                        <button type="submit" className="w-full flex justify-center items-center px-4 py-3 border border-transparent text-base font-medium rounded-md text-white bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-transform transform hover:scale-105">
                             Giriş Yap
                         </button>
                     </div>
@@ -137,8 +137,8 @@ const LoginPage = ({ setIsLoggedIn }) => {
 
                 <div>
                     {/* Google giriş fonksiyonunu butona bağlıyoruz */}
-                    <button 
-                        onClick={handleGoogleLogin} 
+                    <button
+                        onClick={handleGoogleLogin}
                         className="w-full inline-flex justify-center items-center py-3 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-base font-medium text-gray-700 hover:bg-gray-50 transition-colors"
                     >
                         <GoogleIcon /> Google ile Giriş
