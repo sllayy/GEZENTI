@@ -1,7 +1,7 @@
 import React from 'react';
 
 const RouteCard = ({ route }) => {
-    // 1. 'getDifficultyClass' fonksiyonu tamamen silindi.
+   
     
     return (
         <div className="bg-white rounded-2xl shadow-md overflow-hidden border border-gray-200 hover:shadow-xl transition-shadow">
@@ -10,7 +10,7 @@ const RouteCard = ({ route }) => {
                     <span className="text-gray-400">{route.title}</span>
                 </div>
                 
-                {/* 2. Zorluk rozetini gösteren JSX bloğu tamamen silindi. */}
+               
             </div>
             <div className="p-5">
                 <h3 className="text-2xl font-bold text-gray-800 mb-3">{route.title}</h3>

@@ -6,13 +6,12 @@ import Main from './components/Main/main';
 import MapComponent from './pages/MapComponentPage.jsx';
 import ProfilePage from './pages/ProfilePage';
 import RouteBuilderPage from './pages/RouteBuilderPage';
-
+import NotFound from './pages/NotFound';
 // Sayfalar
 import LoginPage from './pages/LoginPage.js';
 import RegisterPage from './pages/RegisterPage.js';
 import RoutesPage from './pages/RoutesPage';
 import DiscoverPoi from './pages/DiscoverPoiPage.jsx';
-
 
 function App() {
   // Giriş durumunu App bileşeninde tutuyoruz
@@ -45,6 +44,7 @@ function App() {
 
             <Route path="/profile" element={isLoggedIn ? <ProfilePage /> : <LoginPage setIsLoggedIn={setIsLoggedIn} setUserName={setUserName} />} />
             <Route path="/route-builder" element={<RouteBuilderPage />} />
+            <Route path="*" element={<NotFound />} />
           </Routes>
         </main>
       </div>

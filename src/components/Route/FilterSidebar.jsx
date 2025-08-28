@@ -7,7 +7,17 @@ import RatingFilter from './RatingFilter';
 const FilterSidebar = ({ filters, onFilterChange, onApply, onReset }) => {
     // 1. 'difficulties' veri dizisi tamamen silindi.
     const sortOptions = [ { name: 'Popülerliğe Göre', code: 'POP' }, { name: 'Yeniye Göre', code: 'NEW' }, { name: 'Puana Göre', code: 'RATE' }];
-    const categories = [ { name: 'Tarih', key: 'Tarih', count: 45 }, { name: 'Sanat', key: 'Sanat', count: 32 }, { name: 'Yemek', key: 'Yemek', count: 28 }, { name: 'Doğa', key: 'Doğa', count: 36 }];
+   const categories = [ 
+        { name: 'Tarih', key: 'Tarih', count: 45 }, 
+        { name: 'Müze', key: 'Müze', count: 25 },
+        { name: 'Sanat', key: 'Sanat', count: 32 }, 
+        { name: 'Yemek', key: 'Yemek', count: 28 }, 
+        { name: 'Alışveriş', key: 'Alisveris', count: 19 },
+        { name: 'Doğa', key: 'Doğa', count: 36 },
+        { name: 'Eğlence', key: 'Eglence', count: 41 },
+        { name: 'Müzik', key: 'Müzik', count: 15 },
+        { name: 'Sahil', key: 'Sahil', count: 22 }
+    ];
     const durations = [ { name: 'Kısa (2-4 saat)', key: 'Kisa', count: 23 }, { name: 'Orta (4-6 saat)', key: 'Orta', count: 31 }, { name: 'Uzun (6+ saat)', key: 'Uzun', count: 18 }, { name: 'Çok Günlük', key: 'CokGunluk', count: 12 }];
 
     return (
@@ -20,7 +30,6 @@ const FilterSidebar = ({ filters, onFilterChange, onApply, onReset }) => {
             />
             <div className="bg-white p-6 rounded-2xl shadow-sm"><h3 className="text-lg font-semibold text-gray-800 flex items-center mb-4"><i className="pi pi-clock mr-2"></i>Süre Filtreleri</h3><div className="space-y-4">{durations.map((dur) => (<div key={dur.key} className="flex items-center justify-between"><div className="flex items-center"><RadioButton inputId={dur.key} name="duration" value={dur.key} onChange={(e) => onFilterChange('selectedDuration', e.value)} checked={filters.selectedDuration === dur.key} /><label htmlFor={dur.key} className="ml-2 text-gray-700">{dur.name}</label></div><span className="text-sm bg-gray-100 text-gray-600 font-medium px-2 py-0.5 rounded-full">{dur.count}</span></div>))}</div></div>
             
-            {/* 2. ZORLUK SEVİYESİ KARTI TAMAMEN KALDIRILDI */}
 
             <div className="bg-white p-6 rounded-2xl shadow-sm"><h3 className="text-lg font-semibold text-gray-800 flex items-center mb-4"><i className="pi pi-map-marker mr-2"></i>Mesafe (km)</h3><p className="text-sm text-gray-600 mb-3">Maksimum Mesafe: {filters.distanceValue} km</p><Slider value={filters.distanceValue} onChange={(e) => onFilterChange('distanceValue', e.value)} min={1} max={50} className="w-full" /><div className="flex justify-between text-xs text-gray-500 mt-1"><span>1 km</span><span>50+ km</span></div></div>
             <div className="space-y-3">

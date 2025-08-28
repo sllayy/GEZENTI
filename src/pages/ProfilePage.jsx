@@ -1,15 +1,55 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEdit, faPlus } from '@fortawesome/free-solid-svg-icons';
 
-const ProfilePage = ({ userName = "User" }) => {
-    const navigate = useNavigate(); // yönlendirme hook'u
-    const [activeTab, setActiveTab] = useState('history'); // Tab state
+const ProfilePage = () => {
+    const navigate = useNavigate();
+    const [activeTab, setActiveTab] = useState('history');
+    const [profileData, setProfileData] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
+
+    useEffect(() => {
+        const token = localStorage.getItem("authToken");
+        if (!token) {
+            setError("Lütfen giriş yapın.");
+            setLoading(false);
+            return;
+        }
+
+        fetch('/api/profile', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            }
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Yetkilendirme hatası. Lütfen tekrar giriş yapın.');
+                }
+                return response.json();
+            })
+            .then(data => {
+                setProfileData(data);
+                setLoading(false);
+            })
+            .catch(err => {
+                console.error("Profil verisi çekilirken hata:", err);
+                setError(err.message);
+                setLoading(false);
+            });
+    }, []);
 
     const handleCreateRoute = () => {
-        navigate("/route-builder"); // RouteBuilderPage sayfasına yönlendir
+        navigate("/route-builder");
     };
+
+    if (loading) return <div>Profil bilgileri yükleniyor...</div>;
+    if (error) return <div>Hata: {error}</div>;
+
+    const userName = profileData?.name || "User";
 
     return (
         <div className="min-h-screen bg-gray-50 p-6">
@@ -23,6 +63,7 @@ const ProfilePage = ({ userName = "User" }) => {
                     <div>
                         <h2 className="text-2xl font-bold">{userName}</h2>
                         <p className="text-gray-500">Seyahat tutkunu ve rota yaratıcısı</p>
+                        <p className="text-gray-600">{profileData?.email}</p>
                     </div>
                 </div>
 
