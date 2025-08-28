@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { FaStar, FaUsers, FaMapMarkerAlt, FaSearch, FaFilter } from "react-icons/fa";
-import MainCard from "../Main/MainCard";
+import MainCard from "../components/Main/MainCard";
 
 const DiscoverPoi = () => {
     // Örnek veriler - Kendi verilerinizle değiştirebilirsiniz

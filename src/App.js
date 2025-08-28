@@ -10,7 +10,7 @@ import ProfilePage from './pages/ProfilePage';  // Remote'dan eklenen ProfilePag
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import RoutesPage from './pages/RoutesPage';
-import DiscoverPoi from './components/Discover_poi/DiscoverPoi'; // Remote'dan eklenen POI bileşeni
+import DiscoverPoi from './pages/DiscoverPoiPage.jsx'; // Remote'dan eklenen POI bileşeni
 
 // Bileşen tanımlamalarını birleştirelim
 const AnaSayfa = () => <div className="p-8"><h1>Ana Sayfa</h1></div>;
