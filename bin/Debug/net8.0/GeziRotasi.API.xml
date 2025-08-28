@@ -1,0 +1,289 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>GeziRotasi.API</name>
+    </assembly>
+    <members>
+        <member name="M:GeziRotasi.API.Controllers.CategoriesController.GetTree(System.Threading.CancellationToken)">
+            <summary> 
+            Kategori ağacı (root → children...). 
+            </summary>
+        </member>
+        <member name="M:GeziRotasi.API.Controllers.CategoriesController.GetFlat(System.Threading.CancellationToken)">
+            <summary> 
+            Düz liste (id, name, slug, parentId, path, depth). 
+            </summary>
+        </member>
+        <member name="M:GeziRotasi.API.Controllers.RouteController.Optimize(GeziRotasi.API.Dtos.RouteRequestDto,System.Threading.CancellationToken)">
+            <summary>
+            Verilen POI'lar için optimize edilmiş bir rota oluşturur.
+            OptimizeOrder=true ise /trip, değilse /route OSRM endpoint'ini çağırır.
+            </summary>
+        </member>
+        <member name="M:GeziRotasi.API.Controllers.RouteController.SubmitRouteFeedback(System.Int32,GeziRotasi.API.Dtos.CreateRouteFeedbackDto)">
+            <summary>
+            Kullanıcının oluşturulan rota için verdiği puan ve yorumu alır.
+            </summary>
+        </member>
+        <member name="T:GeziRotasi.API.Dtos.RouteRequestDto">
+            <summary>
+            Rota optimizasyonu için API'ye gönderilecek olan istek modelidir.
+            </summary>
+        </member>
+        <member name="T:GeziRotasi.API.Migrations.InitialClean">
+            <inheritdoc />
+        </member>
+        <member name="M:GeziRotasi.API.Migrations.InitialClean.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:GeziRotasi.API.Migrations.InitialClean.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:GeziRotasi.API.Migrations.InitialClean.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:GeziRotasi.API.Services.IRouteService">
+            <summary>
+            Rota optimizasyonu ile ilgili işlemleri tanımlayan sözleşmedir (interface).
+            </summary>
+        </member>
+        <member name="M:GeziRotasi.API.Services.IRouteService.GetOptimizedRouteAsync(GeziRotasi.API.Dtos.RouteRequestDto,System.Threading.CancellationToken)">
+            <summary>
+            Verilen koordinatlar için OSRM (Open Source Routing Machine) kullanarak
+            optimize edilmiş bir rota hesaplar.
+            </summary>
+            <param name="request">Rota isteği için gerekli parametreleri içeren DTO.</param>
+            <param name="ct">İsteğin iptal edilmesini sağlayan cancellation token.</param>
+            <returns>Optimize edilmiş rotanın mesafe, süre ve geometri bilgilerini içeren bir DTO.</returns>
+        </member>
+        <member name="P:GeziRotasi.API.Models.SpecialDayHour.Date">
+            <summary>
+            Bu özel saatin geçerli olduğu tarih (Yıl-Ay-Gün).
+            </summary>
+        </member>
+        <member name="P:GeziRotasi.API.Models.SpecialDayHour.Description">
+            <summary>
+            O güne özel bir açıklama (örn: "Ramazan Bayramı", "Resmi Tatil").
+            </summary>
+        </member>
+        <member name="P:GeziRotasi.API.Models.SpecialDayHour.OpenTime">
+            <summary>
+            O güne özel açılış saati. Eğer null ise, o gün kapalı demektir.
+            </summary>
+        </member>
+        <member name="P:GeziRotasi.API.Models.SpecialDayHour.CloseTime">
+            <summary>
+            O güne özel kapanış saati.
+            </summary>
+        </member>
+        <member name="P:GeziRotasi.DTOs.CreateUserPreferencesDto.Budget">
+            <summary>
+            Kullanıcının gezi için ayırdığı bütçe miktarı. Zorunlu bir alandır.
+            Örneğin: 0 ile 100.000 arasında bir değer.
+            </summary>
+        </member>
+        <member name="P:GeziRotasi.DTOs.CreateUserPreferencesDto.CrowdednessPreference">
+            <summary>
+            Kullanıcının kalabalık ortamlar için tercihi. Zorunlu bir alandır.
+            Örneğin: 0 = Az kalabalık, 1 = Orta, 2 = Kalabalık.
+            </summary>
+        </member>
+        <member name="P:GeziRotasi.DTOs.CreateUserPreferencesDto.PreferredThemes">
+            <summary>
+            Kullanıcının seçtiği ilgi alanı temalarının listesi (örn: ["Sanat", "Tarih"]).
+            Frontend'deki "Kategori Seçimi" kısmından gelir.
+            </summary>
+        </member>
+        <member name="P:GeziRotasi.DTOs.CreateUserPreferencesDto.PreferredTransportationMode">
+            <summary>
+            Kullanıcının gezi rotası için tercih ettiği ulaşım modu (örn: "Yürüyüş", "Bisiklet", "Araç", "Toplu Taşıma"). Zorunlu.
+            Frontend'deki "Ulaşım Türü" kısmından gelir.
+            </summary>
+        </member>
+        <member name="P:GeziRotasi.DTOs.CreateUserPreferencesDto.MaxWalkDistance">
+            <summary>
+            Kullanıcının "Yürüyüş" ulaşım modunu seçtiğinde kabul edebileceği maksimum yürüme mesafesi (metre cinsinden).
+            Frontend'deki "Yürüyüş" seçeneği ile alakalı.
+            </summary>
+        </member>
+        <member name="P:GeziRotasi.DTOs.CreateUserPreferencesDto.MinStartTimeHour">
+            <summary>
+            Kullanıcının rotası için istediği minimum başlangıç saati (örneğin: 8). Zorunlu.
+            Frontend'deki "Zaman Aralığı" kısmının başlangıç değeri.
+            </summary>
+        </member>
+        <member name="P:GeziRotasi.DTOs.CreateUserPreferencesDto.MaxEndTimeHour">
+            <summary>
+            Kullanıcının rotası için istediği maksimum bitiş saati (örneğin: 18). Zorunlu.
+            Frontend'deki "Zaman Aralığı" kısmının bitiş değeri.
+            </summary>
+        </member>
+        <member name="P:GeziRotasi.DTOs.CreateUserPreferencesDto.MinPoiRating">
+            <summary>
+            Kullanıcının rotasına dahil edilecek ilgi çekici noktaların (POI) sahip olması gereken minimum puan. Zorunlu.
+            </summary>
+        </member>
+        <member name="P:GeziRotasi.DTOs.CreateUserPreferencesDto.ConsiderTraffic">
+            <summary>
+            Kullanıcının trafik durumunun dikkate alınıp alınmadığı tercihi.
+            Frontend'deki "Trafik durumunu dikkate al" onay kutusu.
+            </summary>
+        </member>
+        <member name="P:GeziRotasi.DTOs.CreateUserPreferencesDto.PrioritizeShortestRoute">
+            <summary>
+            Kullanıcının en kısa rotanın öncelikli olup olmadığı tercihi.
+            Frontend'deki "En kısa rotayı öncelikle" onay kutusu.
+            </summary>
+        </member>
+        <member name="P:GeziRotasi.DTOs.CreateUserPreferencesDto.AccessibilityFriendly">
+            <summary>
+            Kullanıcının engelli erişiminin dikkate alınıp alınmadığı tercihi.
+            Frontend'deki "Engelli erişimi" onay kutusu.
+            </summary>
+        </member>
+        <member name="P:UserPreferencesDto.UserId">
+            <summary>
+            Bu tercihlerin ait olduğu kullanıcının kimliği. Frontend'in hangi kullanıcının tercihlerini görüntülediğini bilmesi için.
+            </summary>
+        </member>
+        <member name="P:UserPreferencesDto.Budget">
+            <summary>
+            Kullanıcının gezi için ayırdığı bütçe tercihi.
+            </summary>
+        </member>
+        <member name="P:UserPreferencesDto.CrowdednessPreference">
+            <summary>
+            Kullanıcının kalabalık ortamlar için tercihi.
+            </summary>
+        </member>
+        <member name="P:UserPreferencesDto.MaxWalkDistance">
+            <summary>
+            Kullanıcının "Yürüyüş" ulaşım modunu seçtiğinde kabul edebileceği maksimum yürüme mesafesi (metre cinsinden).
+            </summary>
+        </member>
+        <member name="P:UserPreferencesDto.PreferredThemes">
+            <summary>
+            Kullanıcının seçtiği ilgi alanı temalarının listesi (örn: ["Sanat", "Tarih"]).
+            </summary>
+        </member>
+        <member name="P:UserPreferencesDto.PreferredTransportationMode">
+            <summary>
+            Kullanıcının gezi rotası için tercih ettiği ulaşım modu (örn: "Yürüyüş", "Bisiklet", "Araç", "Toplu Taşıma").
+            </summary>
+        </member>
+        <member name="P:UserPreferencesDto.MinStartTimeHour">
+            <summary>
+            Kullanıcının rotası için istediği minimum başlangıç saati (örneğin: 8).
+            </summary>
+        </member>
+        <member name="P:UserPreferencesDto.MaxEndTimeHour">
+            <summary>
+            Kullanıcının rotası için istediği maksimum bitiş saati (örneğin: 18).
+            </summary>
+        </member>
+        <member name="P:UserPreferencesDto.MinPoiRating">
+            <summary>
+            Kullanıcının rotasına dahil edilecek ilgi çekici noktaların (POI) sahip olması gereken minimum puan.
+            </summary>
+        </member>
+        <member name="P:UserPreferencesDto.ConsiderTraffic">
+            <summary>
+            Kullanıcının trafik durumunun dikkate alınıp alınmadığı tercihi.
+            </summary>
+        </member>
+        <member name="P:UserPreferencesDto.PrioritizeShortestRoute">
+            <summary>
+            Kullanıcının en kısa rotanın öncelikli olup olmadığı tercihi.
+            </summary>
+        </member>
+        <member name="P:UserPreferencesDto.AccessibilityFriendly">
+            <summary>
+            Kullanıcının engelli erişiminin dikkate alınıp alınmadığı tercihi.
+            </summary>
+        </member>
+        <member name="T:UserPreferences">
+            <summary>
+            Uygulama kullanıcılarının kişiselleştirilmiş gezi rotası tercihlerini veritabanında saklamak için kullanılan veri modelidir.
+            Bu sınıf, veritabanında 'UserPreferences' adında bir tabloya karşılık gelecektir.
+            </summary>
+        </member>
+        <member name="P:UserPreferences.Id">
+            <summary>
+            Bu tercih setinin veritabanındaki benzersiz kimliği (Primary Key).
+            Her yeni tercih kaydı için otomatik olarak artan bir sayı atanır.
+            </summary>
+        </member>
+        <member name="P:UserPreferences.UserId">
+            <summary>
+            Bu tercihlerin hangi kullanıcıya ait olduğunu gösteren kullanıcı kimliği.
+            Kullanıcı oturum açtığında JWT token'ından alınacak ve buraya kaydedilecektir.
+            </summary>
+        </member>
+        <member name="P:UserPreferences.Budget">
+            <summary>
+            Kullanıcının gezi için ayırdığı bütçe tercihi.
+            Frontend'den gelen değere göre (örn: 0, 1, 2) bütçe seviyesini temsil edebilir.
+            </summary>
+        </member>
+        <member name="P:UserPreferences.CrowdednessPreference">
+            <summary>
+            Kullanıcının gezi rotası için tercih ettiği kalabalık düzeyi.
+            Örneğin: 0 = Az kalabalık, 1 = Orta, 2 = Kalabalık.
+            </summary>
+        </member>
+        <member name="P:UserPreferences.MaxWalkDistance">
+            <summary>
+            Kullanıcının "Yürüyüş" ulaşım modu seçeneğinde kabul edebileceği maksimum yürüme mesafesi (metre cinsinden).
+            Frontend'deki "Yürüyüş" seçeneği ile ilişkili olacak.
+            </summary>
+        </member>
+        <member name="P:UserPreferences.PreferredThemes">
+            <summary>
+            Kullanıcının seçtiği ilgi alanı temalarının virgülle ayrılmış bir listesi (örn: "Sanat,Tarih,Yemek").
+            Frontend'deki "Kategori Seçimi" kısmından gelir. Veritabanında tek bir string olarak saklanır.
+            </summary>
+        </member>
+        <member name="P:UserPreferences.PreferredTransportationMode">
+            <summary>
+            Kullanıcının gezi rotası için tercih ettiği ulaşım modu (örn: "Yürüyüş", "Bisiklet", "Araç", "Toplu Taşıma").
+            Frontend'deki "Ulaşım Türü" kısmından gelir.
+            </summary>
+        </member>
+        <member name="P:UserPreferences.MinStartTimeHour">
+            <summary>
+            Kullanıcının rotası için istediği minimum başlangıç saati (örneğin: 8 = sabah 08:00).
+            Frontend'deki "Zaman Aralığı" kısmının başlangıcı.
+            </summary>
+        </member>
+        <member name="P:UserPreferences.MaxEndTimeHour">
+            <summary>
+            Kullanıcının rotası için istediği maksimum bitiş saati (örneğin: 18 = akşam 18:00).
+            Frontend'deki "Zaman Aralığı" kısmının bitişi.
+            </summary>
+        </member>
+        <member name="P:UserPreferences.MinPoiRating">
+            <summary>
+            Kullanıcının rotasına dahil edilecek ilgi çekici noktaların (POI) sahip olması gereken minimum puan.
+            Bu, rotanın kalitesini etkileyen bir filtre olabilir.
+            </summary>
+        </member>
+        <member name="P:UserPreferences.ConsiderTraffic">
+            <summary>
+            Kullanıcının trafik durumunun dikkate alınıp alınmadığı tercihi.
+            Frontend'deki "Trafik durumunu dikkate al" onay kutusuna karşılık gelir.
+            </summary>
+        </member>
+        <member name="P:UserPreferences.PrioritizeShortestRoute">
+            <summary>
+            Kullanıcının en kısa rotanın öncelikli olup olmadığı tercihi.
+            Frontend'deki "En kısa rotayı öncelikle" onay kutusuna karşılık gelir.
+            </summary>
+        </member>
+        <member name="P:UserPreferences.AccessibilityFriendly">
+            <summary>
+            Kullanıcının engelli erişiminin dikkate alınıp alınmadığı tercihi.
+            Frontend'deki "Engelli erişimi" onay kutusuna karşılık gelir.
+            </summary>
+        </member>
+    </members>
+</doc>
