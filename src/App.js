@@ -6,7 +6,7 @@ import Main from './components/Main/main'; // Remote'dan eklenen Main bileşeni
 import MapComponent from './components/Map/MapComponent';
 import ProfilePage from './pages/ProfilePage';  // Remote'dan eklenen ProfilePage bileşeni
 import RouteBuilderPage from './pages/RouteBuilderPage';
-
+import NotFound from './pages/NotFound';
 // Sayfalar
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
@@ -42,6 +42,7 @@ function App() {
   <Route path="/register" element={<RegisterPage setIsLoggedIn={setIsLoggedIn} />} />
   <Route path="/profile" element={isLoggedIn ? <ProfilePage /> : <LoginPage setIsLoggedIn={setIsLoggedIn} />} />
   <Route path="/route-builder" element={<RouteBuilderPage />} />
+   <Route path="*" element={<NotFound />} />
 </Routes>
 
         </main>
