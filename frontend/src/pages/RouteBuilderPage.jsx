@@ -2,9 +2,6 @@
 
 import React, { useState, useRef } from 'react';
 import { Toast } from 'primereact/toast';
-import { Divider } from 'primereact/divider'; // Kullanılmadığı için kaldırılabilir
-import { Button } from 'primereact/button'; // Kullanılmadığı için kaldırılabilir
-import { Card } from 'primereact/card'; // Kullanılmadığı için kaldırılabilir
 import RouteInfoCard from '../components/Route/RouteBuilder/RouteInfoCard';
 import CategorySelectorCard from '../components/Route/RouteBuilder/CategorySelectorCard';
 import TimeRangeCard from '../components/Route/RouteBuilder/TimeRangeCard';
@@ -24,14 +21,14 @@ const RouteBuilderPage = () => {
     const [transportType, setTransportType] = useState('walking');
     const [considerTraffic, setConsiderTraffic] = useState(false);
     const [shortestRoute, setShortestRoute] = useState(false);
-    // const [accessibleRoute, setAccessibleRoute] = useState(false); // ExtraOptionsCard'dan kaldırıldığı için burada da kaldırıldı
+    const [crowdPreference, setCrowdPreference] = useState(0); 
 
-    // YENİ EKLENEN: crowdPreference state'i
-    const [crowdPreference, setCrowdPreference] = useState(0); // Başlangıç değeri 0 olarak ayarlandı
+    // YENİ EKLENEN: Rota verisi state'i
+    const [routeData, setRouteData] = useState(null);
 
     const toast = useRef(null);
 
-    // Kategori listesi (burada veya ayrı bir config dosyasında tutulabilir)
+    // Kategori listesi
     const categories = [
         { id: 'tarih', label: 'Tarih', icon: 'pi pi-clock' },
         { id: 'yemek', label: 'Yemek', icon: 'pi pi-star' },
@@ -41,11 +38,10 @@ const RouteBuilderPage = () => {
         { id: 'eglence', label: 'Eğlence', icon: 'pi pi-moon' },
         { id: 'sanat', label: 'Sanat', icon: 'pi pi-users' },
         { id: 'sahil', label: 'Sahil', icon: 'pi pi-camera' },
-         { id: 'doga', label: 'Doga', icon: 'pi pi-camera' }
-
+        { id: 'doga', label: 'Doga', icon: 'pi pi-camera' }
     ];
 
-    // Ulaşım türleri (burada veya ayrı bir config dosyasında tutulabilir)
+    // Ulaşım türleri
     const transportTypes = [
         { id: 'walking', label: 'Yürüyüş', icon: 'pi pi-user', subtitle: 'Yaya olarak', speed: '~2-3 km/saat' },
         { id: 'car', label: 'Araç', icon: 'pi pi-car', subtitle: 'Özel araç', speed: '~40-60 km/saat' },
@@ -84,7 +80,20 @@ const RouteBuilderPage = () => {
                 detail: 'Rotanız başarıyla oluşturuldu!',
                 life: 3000
             });
-            // Burada rotayı oluşturduktan sonra gerekli yönlendirmeleri veya state güncellemelerini yapabilirsiniz.
+            
+            // ÖRNEK: Backend'den dönecek mockup verisi
+            const mockData = {
+                distance: "12 km",
+                duration: "3 saat 30 dakika",
+                poiCount: 7,
+                stops: [
+                    { id: 1, name: "Galata Kulesi", time: "10:00 - 11:00", icon: "pi pi-map-marker" },
+                    { id: 2, name: "İstanbul Modern", time: "11:30 - 13:00", icon: "pi pi-palette" },
+                    { id: 3, name: "Taksim Meydanı", time: "13:30 - 14:00", icon: "pi pi-building" },
+                    { id: 4, name: "İstiklal Caddesi", time: "14:00 - 16:00", icon: "pi pi-shopping-bag" },
+                ]
+            };
+            setRouteData(mockData); // Rota verisini state'e kaydediyoruz
         }, 2000);
     };
 
@@ -114,10 +123,11 @@ const RouteBuilderPage = () => {
             </div>
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {/* Buradaki grid yapısını 2/3 oranında olacak şekilde değiştirdik */}
+                <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
                     
-                    {/* Sol Panel */}
-                    <div className="space-y-6">
+                    {/* Sol Panel: 5 birimin 2'sini kaplar */}
+                    <div className="space-y-6 lg:col-span-2">
                         {/* Rota Bilgileri */}
                         <RouteInfoCard 
                             routeName={routeName} 
@@ -154,19 +164,19 @@ const RouteBuilderPage = () => {
                             setConsiderTraffic={setConsiderTraffic} 
                             shortestRoute={shortestRoute} 
                             setShortestRoute={setShortestRoute} 
-                            // accessibleRoute prop'u ExtraOptionsCard'dan kaldırıldığı için burada da kaldırıldı
-                            crowdPreference={crowdPreference} // YENİ EKLENEN PROP
-                            setCrowdPreference={setCrowdPreference} // YENİ EKLENEN PROP
+                            crowdPreference={crowdPreference}
+                            setCrowdPreference={setCrowdPreference}
                         />
                     </div>
 
-                    {/* Sağ Panel */}
-                    <div className="space-y-6">
+                    {/* Sağ Panel: 5 birimin 3'ünü kaplar */}
+                    <div className="space-y-6 lg:col-span-3">
                         {/* Rota Önizleme ve Oluşturma Butonları */}
                         <RoutePreviewCard 
                             isCreatingRoute={isCreatingRoute}
                             onCreateRoute={handleCreateRoute}
                             onOptimizeRoute={handleOptimizeRoute}
+                            routeData={routeData} // YENİ EKLENEN PROP
                         />
 
                         {/* Kişiselleştirilmiş Öneriler */}

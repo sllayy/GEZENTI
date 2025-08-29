@@ -16,7 +16,7 @@ const CategorySelectorCard = ({ categories, selectedCategories, setSelectedCateg
     };
 
     return (
-        <Card className="shadow-md">
+        <Card className="shadow-lg rounded-xl p-6">
             <div className="p-6">
                 <div className="flex items-center mb-4">
                     <i className="pi pi-tags text-blue-500 mr-2"></i>
@@ -48,7 +48,7 @@ const CategorySelectorCard = ({ categories, selectedCategories, setSelectedCateg
                 </div>
 
                 {selectedCategories.length > 0 && (
-                    <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+                    <div className="mt-4 p-3 bg-blue-50 rounded-xlg">
                         <p className="text-sm text-blue-700">
                             <strong>Seçilen kategoriler:</strong> {' '}
                             {selectedCategories.map(id => 

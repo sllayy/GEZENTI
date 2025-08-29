@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import FilterSidebar from '../components/Route/FilterSidebar';
 import RouteCard from '../components/Route/RouteCard';
+import 'primereact/resources/themes/lara-light-blue/theme.css';
+import 'primereact/resources/primereact.min.css';
+import 'primeicons/primeicons.css';
 
 // 1. Her rota nesnesinden 'difficulty' özelliği kaldırıldı.
 const allRoutes = [
@@ -28,16 +31,21 @@ const RoutesPage = () => {
 
     const handleApplyFilters = () => {
         let tempRoutes = [...allRoutes];
-        
-        // 3. Filtreleme mantığından zorluk seviyesi satırı kaldırıldı.
-        tempRoutes = tempRoutes.filter(route => 
+
+        tempRoutes = tempRoutes.filter(route =>
+            // Minimum rating
             route.rating >= filters.ratingValue &&
+            // Maksimum distance
             route.distance <= filters.distanceValue &&
-            (!filters.selectedCategory || route.category === filters.selectedCategory) &&
+            // Kategori filtresi (diziye göre)
+            (!filters.selectedCategory.length || filters.selectedCategory.includes(route.category)) &&
+            // Süre filtresi
             (!filters.selectedDuration || route.durationCategory === filters.selectedDuration)
         );
+
         setFilteredRoutes(tempRoutes);
     };
+
 
     const handleResetFilters = () => {
         // 4. Sıfırlama işleminden 'selectedDifficulty' kaldırıldı.
@@ -47,7 +55,7 @@ const RoutesPage = () => {
         });
         setFilteredRoutes(allRoutes);
     };
-    
+
     return (
         <div className="bg-gray-50 min-h-screen">
             <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
