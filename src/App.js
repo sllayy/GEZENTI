@@ -8,16 +8,19 @@ import ProfilePage from './pages/ProfilePage';
 import RouteBuilderPage from './pages/RouteBuilderPage';
 import NotFound from './pages/NotFound';
 // Sayfalar
-import LoginPage from './pages/LoginPage.js';
+import LoginPage from './pages/LoginPage.jsx';
 import RegisterPage from './pages/RegisterPage.jsx';
 import RoutesPage from './pages/RoutesPage.jsx';
 import DiscoverPoi from './pages/DiscoverPoiPage.jsx';
-
+// PrimeReact stil dosyaları (eğer henüz eklenmediyse)
+import 'primereact/resources/themes/saga-blue/theme.css'; // Seçtiğiniz tema
+import 'primereact/resources/primereact.min.css'; // PrimeReact ana CSS
+import 'primeicons/primeicons.css'; // PrimeIcons
 function App() {
-  // Giriş durumunu App bileşeninde tutuyoruz
+  
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  // Kullanıcı adını App bileşeninde tutuyoruz
+  
   const [userName, setUserName] = useState("");
 
   return (
@@ -38,7 +41,7 @@ function App() {
             <Route path="/poi" element={<DiscoverPoi />} />
             <Route path="/map" element={<MapComponent />} />
 
-            {/* Login ve Register sayfalarına setUserName'i de gönderiyoruz */}
+            
             <Route path="/login" element={<LoginPage setIsLoggedIn={setIsLoggedIn} setUserName={setUserName} />} />
             <Route path="/register" element={<RegisterPage setIsLoggedIn={setIsLoggedIn} setUserName={setUserName} />} />
 

@@ -26,8 +26,8 @@ const ExtraOptionsCard = ({
 
 
     return (
-        <Card className="shadow-md">
-            <div className="p-6">
+        <Card className="shadow-md rounded-xlg">
+            <div className="p-6 rounded-xlg">
                 <div className="flex items-center mb-4">
                     <i className="pi pi-cog text-blue-500 mr-2"></i>
                     <h2 className="text-xl font-semibold text-gray-900">
@@ -36,7 +36,7 @@ const ExtraOptionsCard = ({
                 </div>
 
                 <div className="space-y-3">
-                    <div className="flex items-center justify-between p-3 border rounded-lg">
+                    <div className="flex items-center justify-between p-3 border rounded-lxg">
                         <div className="flex items-center">
                             <i className="pi pi-exclamation-triangle mr-3 text-orange-500"></i>
                             <span className="font-medium">Trafik durumunu dikkate al</span>
@@ -47,7 +47,7 @@ const ExtraOptionsCard = ({
                         />
                     </div>
 
-                    <div className="flex items-center justify-between p-3 border rounded-lg">
+                    <div className="flex items-center justify-between p-3 border rounded-xlg">
                         <div className="flex items-center">
                             <i className="pi pi-map-marker mr-3 text-green-500"></i>
                             <span className="font-medium">En kısa rotayı öncelikle</span>
@@ -59,7 +59,7 @@ const ExtraOptionsCard = ({
                     </div>
 
                     {/* Kalabalık Tercihi Dropdown'ı (sayısal değerler) */}
-                    <div className="flex items-center justify-between p-3 border rounded-lg">
+                    <div className="flex items-center justify-between p-3 border rounded-xlg">
                         <div className="flex items-center">
                             <i className="pi pi-user-plus mr-3 text-purple-500"></i>
                             <span className="font-medium">Kalabalık tercihi</span>

@@ -13,20 +13,31 @@ const MainCard = ({
     rating,
     comments,
 }) => {
+    // Yorum ve derecelendirmelerin tek bir state'te tutulması için yeni yapı
+    const [allSubmissions, setAllSubmissions] = useState(
+        (comments || []).map(comment => ({ type: 'comment', text: comment }))
+    );
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [newComment, setNewComment] = useState("");
-    const [allComments, setAllComments] = useState(comments || []);
 
     const openModal = () => setIsModalOpen(true);
     const closeModal = () => setIsModalOpen(false);
 
-    const handleAddComment = () => {
-        if (newComment.trim() !== "") {
-            setAllComments([newComment, ...allComments]);
-            setNewComment("");
+    // YENİ: Tek bir fonksiyonla tüm gönderimi yönetiyoruz
+    const handleSubmission = (submission) => {
+        // Gönderimi state'e eklemeden önce gerekli kontrolleri yapıyoruz
+        if (submission.comment.length > 0) {
+            setAllSubmissions(prevSubmissions => [
+                { type: 'full', text: submission.comment, rating: submission.rating, emoji: submission.emoji },
+                ...prevSubmissions
+            ]);
+        } else {
+            setAllSubmissions(prevSubmissions => [
+                { type: 'ratingOnly', rating: submission.rating, emoji: submission.emoji },
+                ...prevSubmissions
+            ]);
         }
     };
-
+    
     return (
         <div className="bg-white rounded-lg shadow-md overflow-hidden relative mb-20">
             <img src={image} alt={title} className="w-full h-48 object-cover" />
@@ -76,42 +87,36 @@ const MainCard = ({
             </div>
 
             {/* Modal */}
-            <Modal isOpen={isModalOpen} onClose={closeModal}>
+            <Modal 
+                isOpen={isModalOpen} 
+                onClose={closeModal}
+                onRateSubmit={handleSubmission} 
+            >
                 <h2 className="text-2xl font-bold mb-2">{title}</h2>
                 <p className="text-gray-600 mb-4">{description}</p>
 
                 {/* Yorumlar */}
                 <h3 className="font-semibold mb-2">Yorumlar:</h3>
                 <div className="max-h-64 overflow-y-auto mb-4">
-                    {allComments.length > 0 ? (
-                        allComments.map((c, i) => (
+                    {allSubmissions.length > 0 ? (
+                        allSubmissions.map((submission, i) => (
                             <p
                                 key={i}
                                 className="text-sm text-gray-700 mb-2 border-b pb-1"
                             >
-                                {c}
+                                {/* Türüne göre içeriği render ediyoruz */}
+                                {submission.type === 'full' ? 
+                                    `Değerlendirme: ${submission.rating} yıldız ${submission.emoji} - ${submission.text}` :
+                                    submission.type === 'ratingOnly' ?
+                                    `Değerlendirme: ${submission.rating} yıldız ve ${submission.emoji}` :
+                                    submission.type === 'comment' ? 
+                                    submission.text : null
+                                }
                             </p>
                         ))
                     ) : (
                         <p className="text-sm text-gray-500">Henüz yorum yok.</p>
                     )}
-                </div>
-
-                {/* Yorum ekleme */}
-                <div className="flex flex-col sm:flex-row gap-2">
-                    <input
-                        type="text"
-                        placeholder="Yorum ekle..."
-                        value={newComment}
-                        onChange={(e) => setNewComment(e.target.value)}
-                        className="border rounded-lg px-3 py-2 flex-1 focus:outline-none focus:ring-2 focus:ring-orange-400"
-                    />
-                    <button
-                        onClick={handleAddComment}
-                        className="px-4 py-2 bg-orange-400 text-white rounded-lg hover:bg-orange-500"
-                    >
-                        Gönder
-                    </button>
                 </div>
             </Modal>
         </div>
