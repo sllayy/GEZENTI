@@ -1,16 +1,16 @@
 import React from 'react';
 
 const RouteCard = ({ route }) => {
-   
-    
+
+
     return (
         <div className="bg-white rounded-2xl shadow-md overflow-hidden border border-gray-200 hover:shadow-xl transition-shadow">
             <div className="relative">
                 <div className="w-full h-48 bg-gray-200 flex items-center justify-center">
                     <span className="text-gray-400">{route.title}</span>
                 </div>
-                
-               
+
+
             </div>
             <div className="p-5">
                 <h3 className="text-2xl font-bold text-gray-800 mb-3">{route.title}</h3>
@@ -26,7 +26,7 @@ const RouteCard = ({ route }) => {
                 <div className="border-t border-gray-200 my-4"></div>
                 <div className="flex justify-between items-center">
                     <span className="text-sm font-medium text-gray-800">{route.author?.name}</span>
-                    <button className="px-5 py-2 font-semibold text-sm rounded-lg text-white bg-green-500 hover:bg-green-600">
+                    <button className="px-5 py-2 font-semibold text-sm rounded-lg text-white bg-orange-500 hover:bg-orange-600">
                         İncele
                     </button>
                 </div>

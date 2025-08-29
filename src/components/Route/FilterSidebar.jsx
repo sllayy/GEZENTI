@@ -144,7 +144,7 @@ const FilterSidebar = ({ filters, onFilterChange, onApply, onReset }) => {
             <div className="space-y-3">
                 <button
                     onClick={onApply}
-                    className="w-full flex justify-center items-center py-3 px-4 font-semibold text-white rounded-xl bg-gradient-to-r from-cyan-500 to-orange-400 hover:opacity-90 shadow-md"
+                    className="w-full flex justify-center items-center py-3 px-4 font-semibold text-white rounded-xl  bg-orange-500 hover:bg-orange-600 shadow-md"
                 >
                     <i className="pi pi-check mr-2"></i>Filtreleri Uygula
                 </button>
