@@ -66,7 +66,7 @@ FirebaseApp.Create(new AppOptions
 {
     Credential = GoogleCredential.FromFile(fbCredPath)
 });
-
+builder.Services.AddHostedService<ExpiredEmailCodeCleanupService>();
 
 builder.Services.AddAuthentication(opt =>
 {
