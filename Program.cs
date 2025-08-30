@@ -116,6 +116,7 @@ builder.Services.AddScoped<PoiService>();
 builder.Services.AddScoped<ICategoryRepository, InMemoryCategoryRepository>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddHttpClient<IRouteService, RouteService>();
+builder.Services.AddScoped<RecommendationService>();
 
 // ----------------------
 // 8. Controllers & Swagger
