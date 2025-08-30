@@ -1,4 +1,3 @@
-using System.Collections.Generic; // List<string> kullanmak için gerekli.
 
 public class UserPreferencesDto
 {

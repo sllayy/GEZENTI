@@ -27,6 +27,7 @@
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="9.0.8" />
     <PackageReference Include="MimeKit" Version="4.13.0" />
+    <PackageReference Include="NetTopologySuite.Core" Version="1.15.3" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.4" />
 
     <!-- Harita ve GeoJSON için -->

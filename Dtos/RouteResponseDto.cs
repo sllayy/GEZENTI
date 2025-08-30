@@ -1,6 +1,9 @@
-#nullable enable
+﻿#nullable enable
 namespace GeziRotasi.API.Dtos
 {
+    /// <summary>
+    /// OSRM'den donen rota bilgisini kullan�c�ya sunmak icin kullanilan DTO.
+    /// </summary>
     public class RouteResponseDto
     {
         public double Distance { get; set; }
@@ -9,5 +12,9 @@ namespace GeziRotasi.API.Dtos
         public List<int>? WaypointOrder { get; set; }
         public List<RouteVariantDto>? Alternatives { get; set; }
         public bool PreferencesApplied { get; internal set; }
+
+        public LocationDto StartLocation { get; set; } = default!;
+        public LocationDto? EndLocation { get; set; }
+        public List<PoiDto> VisitPois { get; set; } = new();
     }
 }
