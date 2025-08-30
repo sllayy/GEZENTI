@@ -2,7 +2,7 @@ using GeziRotasi.API.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using GeziRotasi.API.Entities; // EmailCode, PasswordHistory
+using GeziRotasi.API.Entities;
 
 namespace GeziRotasi.API.Data
 {
@@ -67,6 +67,11 @@ namespace GeziRotasi.API.Data
             modelBuilder.Entity<Poi>()
                 .Property(p => p.Category)
                 .HasConversion<string>();
+        }
+
+        internal async Task SaveChangesAsync()
+        {
+            throw new NotImplementedException();
         }
     }
 }

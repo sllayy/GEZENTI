@@ -11,11 +11,13 @@
         Alışveriş,
         Park,
         Müze,
-        Restoran,        
+        Restoran,
         Genel,
         Sanat,
         Doğa,
         Eğlence,
-        Müzik
+        Müzik,
+        Karayolu,
+        Önemli
     }
 }

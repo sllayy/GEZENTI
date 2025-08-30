@@ -52,4 +52,32 @@ CodeCoverage/
 *.VisualState.xml
 TestResult.xml
 nunit-*.xml
+
+# Node (for frontend)
 node_modules/
+
+# Visual Studio cache
+.vs/
+
+# Build output
+bin/
+obj/
+
+# Rider / JetBrains IDE
+.idea/
+
+# User-specific files
+*.user
+*.suo
+
+# Env files (secret configs)
+*.env
+.env.*
+
+# OSRM data and binaries
+*.osrm
+*.osrm.*
+*.osm.pbf
+osrm-data/
+osm/
+
