@@ -73,3 +73,11 @@ obj/
 # Env files (secret configs)
 *.env
 .env.*
+
+# OSRM data and binaries
+*.osrm
+*.osrm.*
+*.osm.pbf
+osrm-data/
+osm/
+

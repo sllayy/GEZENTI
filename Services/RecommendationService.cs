@@ -36,7 +36,7 @@ namespace GeziRotasi.API.Services
             double radiusKm,
             CancellationToken ct = default)
         {
-            // Kullanıcı konumu aralık kontrolü (client-side)
+            // Kullanıcı konumu aralık kontrolü  
             if (!(userLat is >= -90 and <= 90) || !(userLon is >= -180 and <= 180))
             {
                 return new
@@ -48,12 +48,12 @@ namespace GeziRotasi.API.Services
                 };
             }
 
-            // 1) Kullanıcı tercihleri
+            //  Kullanıcı tercihleri
             var prefs = await _db.UserPreferences
                 .AsNoTracking()
                 .FirstOrDefaultAsync(p => p.UserId == userId, ct);
 
-            // 2) SQL'e çevrilebilir POI filtresi
+            //  SQL'e çevrilebilir POI filtresi
             var poisQuery = _db.Pois
                 .Include(p => p.Reviews)
                 .Include(p => p.WorkingHours)
@@ -63,7 +63,7 @@ namespace GeziRotasi.API.Services
                     !(p.Latitude == 0 && p.Longitude == 0))
                 .AsQueryable();
 
-            // 2.a Temalar (varsa)
+            //  Temalar (varsa)
             if (prefs != null && !string.IsNullOrWhiteSpace(prefs.PreferredThemes))
             {
                 var mappedCategories = prefs.PreferredThemes
@@ -77,7 +77,7 @@ namespace GeziRotasi.API.Services
                     poisQuery = poisQuery.Where(p => mappedCategories.Contains(p.Category));
             }
 
-            // 2.b Min rating (varsa) — review’suzları dışlama YAPMIYORUZ (kapsayıcı)
+            //  Min rating (varsa) — review’suzları dışlama YAPMIYORUZ (kapsayıcı)
             if (prefs?.MinPoiRating > 0)
             {
                 var min = prefs.MinPoiRating;
@@ -85,7 +85,7 @@ namespace GeziRotasi.API.Services
                     !p.Reviews.Any() || p.Reviews.Average(r => r.Rating) >= min);
             }
 
-            // 2.c Çalışma saatleri — saat bilgisi yoksa dahil; varsa “şimdi açık” arar
+            //  Çalışma saatleri — saat bilgisi yoksa dahil; varsa “şimdi açık” arar
             var now = DateTime.Now;
             var nowTime = TimeOnly.FromDateTime(now);
             var today = (int)now.DayOfWeek;
@@ -97,7 +97,7 @@ namespace GeziRotasi.API.Services
                     (h.OpenTime == null || h.OpenTime <= nowTime) &&
                     (h.CloseTime == null || h.CloseTime >= nowTime)));
 
-            // 3) EF'den tipli projeksiyon (SQL’e çevrilebilir)
+            //  EF'den tipli projeksiyon (SQL’e çevrilebilir)
             var baseList = await poisQuery
                 .Select(p => new PoiFlat(
                     p.Id,
@@ -109,7 +109,7 @@ namespace GeziRotasi.API.Services
                 ))
                 .ToListAsync(ct);
 
-            // 4) Yarıçap skorlama (client-side)
+            //   Yarıçap skorlama (client-side)
             var (chosen, usedRadius) = RankAndPickWithinRadius(baseList, userLat, userLon, radiusKm);
 
             if (!chosen.Any())
@@ -135,9 +135,7 @@ namespace GeziRotasi.API.Services
                     coordValidated = true
                 }
             };
-        }
-
-        // ----------------- Helpers -----------------
+        }                
 
         private static (List<ScoredPoi> chosen, double usedRadiusKm)
             RankAndPickWithinRadius(
@@ -175,8 +173,7 @@ namespace GeziRotasi.API.Services
             double c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
             return R * c;
         }
-
-        // EF projeksiyonu için düz tipler (ekstra DTO dosyasına gerek yok)
+                
         private readonly record struct PoiFlat(
             int Id,
             string Name,
