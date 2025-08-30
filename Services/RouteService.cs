@@ -1,6 +1,5 @@
 #nullable enable
 using System.Globalization;
-using System.Text;
 using System.Text.Json;
 using GeziRotasi.API.Data;
 using GeziRotasi.API.Dtos;
@@ -15,7 +14,6 @@ namespace GeziRotasi.API.Services
         private readonly IConfiguration _config;
         private readonly ILogger<RouteService> _logger;
         private readonly AppDbContext _db;
-        private readonly string _osrmBaseUrl;
 
         // FE -> DB enum köprüsü
         private readonly Dictionary<string, PoiCategory> _themeMap = new()
@@ -38,7 +36,6 @@ namespace GeziRotasi.API.Services
             _config = config;
             _logger = logger;
             _db = db;
-            _osrmBaseUrl = (_config["Osrm:BaseUrl"] ?? "http://localhost:8081").TrimEnd('/');
         }
 
         public async Task<RouteResponseDto> GetOptimizedRouteAsync(RouteRequestDto request, CancellationToken ct = default)
@@ -69,7 +66,7 @@ namespace GeziRotasi.API.Services
                     _logger.LogInformation("Trafik dikkate alınması istendi (OSRM native desteklemez).");
             }
 
-            // 2) Tema -> POI filtreleme (opsiyonel)
+            // 2) Tema -> POI filtreleme
             List<Poi> poisForRoute;
             if (prefs != null && !string.IsNullOrEmpty(prefs.PreferredThemes))
             {
@@ -90,32 +87,24 @@ namespace GeziRotasi.API.Services
             }
             else
             {
-                // Tema seçimi yoksa tüm POI’ler (veya boş bırakarak sadece start/end ile rota) — burada tüm POI’leri almak isteğe bağlı.
                 poisForRoute = await _db.Pois.ToListAsync(ct);
             }
 
-            // 3) OSRM’e gönderilecek waypoint listesi (start -> POIs -> end)
-            //   OptimizeOrder=true ise TRIP endpoint sıralamayı kendi yapar.
+            // 3) OSRM waypoint listesi
             var finalCoords = new List<double[]>();
-
-            // Başlangıç
             var start = request.Coordinates.First();
             finalCoords.Add(new[] { start[0], start[1] });
 
-            // POI’ler (varsa)
             foreach (var poi in poisForRoute)
             {
-                // Aynı noktayı iki kez eklemeyelim
                 if (!(poi.Longitude == start[0] && poi.Latitude == start[1]))
                     finalCoords.Add(new[] { poi.Longitude, poi.Latitude });
             }
 
-            // Bitiş
             var end = request.Coordinates.Last();
             if (!(end[0] == start[0] && end[1] == start[1]))
                 finalCoords.Add(new[] { end[0], end[1] });
 
-            // Eğer filtre sonunda POI yoksa, OSRM en az iki nokta görsün diye start/end kalsın
             if (finalCoords.Count < 2)
             {
                 finalCoords.Clear();
@@ -140,19 +129,22 @@ namespace GeziRotasi.API.Services
         {
             var geometries = request.GeoJson ? "geojson" : "polyline";
 
+            string baseUrl = mode == "driving"
+                ? (_config["Osrm:CarBaseUrl"] ?? "http://localhost:5002")
+                : (_config["Osrm:FootBaseUrl"] ?? "http://localhost:5003");
+
             if (request.OptimizeOrder)
             {
                 var roundtrip = request.ReturnToStart ? "true" : "false";
                 var tail = $"overview=full&geometries={geometries}&roundtrip={roundtrip}&source=first";
                 if (!request.ReturnToStart) tail += "&destination=last";
-                return $"{_osrmBaseUrl}/trip/v1/{mode}/{coordsString}?{tail}";
+                return $"{baseUrl}/trip/v1/{mode}/{coordsString}?{tail}";
             }
             else
             {
                 var query = $"overview=full&geometries={geometries}";
                 if (request.Alternatives > 0) query += $"&alternatives={Math.Min(request.Alternatives, 3)}";
-
-                return $"{_osrmBaseUrl}/route/v1/{mode}/{coordsString}?{query}";
+                return $"{baseUrl}/route/v1/{mode}/{coordsString}?{query}";
             }
         }
 

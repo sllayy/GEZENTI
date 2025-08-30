@@ -103,8 +103,8 @@ builder.Services.AddCors(opt =>
 // 7. Custom Services
 // ----------------------
 
-// HttpClient Factory
-builder.Services.AddHttpClient();
+// OSRM ve diğer API çağrıları için HttpClientFactory
+builder.Services.AddHttpClient<IRouteService, RouteService>();
 
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IEmailSender, MailKitEmailSender>();
@@ -115,7 +115,6 @@ builder.Services.AddScoped<OsmService>();
 builder.Services.AddScoped<PoiService>();
 builder.Services.AddScoped<ICategoryRepository, InMemoryCategoryRepository>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
-builder.Services.AddHttpClient<IRouteService, RouteService>();
 
 // ----------------------
 // 8. Controllers & Swagger

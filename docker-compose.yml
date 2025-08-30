@@ -1,0 +1,20 @@
+version: "3.8"
+services:
+  osrm-car:
+    image: osrm/osrm-backend
+    platform: linux/amd64
+    command: osrm-routed --algorithm mld /data/Istanbul.osrm
+    volumes:
+      - ./osrm/istanbul-car:/data
+    ports:
+      - "5002:5000"
+
+  osrm-foot:
+    image: osrm/osrm-backend
+    platform: linux/amd64
+    command: osrm-routed --algorithm mld /data/Istanbul.osrm
+    volumes:
+      - ./osrm/istanbul-foot:/data
+    ports:
+      - "5003:5000"
+
