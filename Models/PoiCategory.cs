@@ -18,6 +18,8 @@
         Eğlence,
         Müzik,
         Karayolu,
-        Önemli
+        KültürelTesisler,
+        OnemliNoktalar,
+        TarihiTuristikTesisler
     }
 }

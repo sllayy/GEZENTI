@@ -1,6 +1,7 @@
 <<<<<<< HEAD
 # GEZENTI
 .NET backend + React frontend ile CBS tabanlı gezi uygulaması
+<<<<<<< Updated upstream
 =======
 # Getting Started with Create React App
 
@@ -73,3 +74,66 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/d
 
 This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
 >>>>>>> 9215ebb (Initialize project using Create React App)
+=======
+
+## 🚀 Geliştirme Ortamı Kurulumu
+
+### Port Yapılandırması
+
+Bu proje, her geliştiricinin farklı port numaraları kullanabilmesi için esnek bir yapılandırma sistemi içerir.
+
+#### Frontend Port Yapılandırması
+
+1. **Otomatik Yapılandırma (Önerilen):**
+   - Frontend uygulamasını başlattıktan sonra sağ alt köşede 🔧 simgesine tıklayın
+   - Backend port numaranızı girin (varsayılan: 7248)
+   - Frontend port numaranızı girin (varsayılan: 3000)
+   - HTTPS kullanımını seçin
+   - "Kaydet" butonuna tıklayın
+
+2. **Environment Variables ile:**
+   ```bash
+   # frontend/.env.development dosyası oluşturun
+   REACT_APP_API_URL=https://localhost:7248/api
+   REACT_APP_BACKEND_PORT=7248
+   REACT_APP_FRONTEND_PORT=3000
+   ```
+
+#### Backend Port Yapılandırması
+
+1. **Properties/launchSettings.json** dosyasında port numaralarını değiştirin:
+   ```json
+   {
+     "profiles": {
+       "https": {
+         "applicationUrl": "https://localhost:7248"
+       }
+     }
+   }
+   ```
+
+### Kurulum Adımları
+
+1. **Backend'i başlatın:**
+   ```bash
+   dotnet run --launch-profile https
+   ```
+
+2. **Frontend'i başlatın:**
+   ```bash
+   cd frontend
+   npm start
+   ```
+
+3. **Port yapılandırmasını yapın:**
+   - Frontend'de sağ alt köşedeki 🔧 simgesine tıklayın
+   - Kendi port numaralarınızı girin
+   - Kaydedin
+
+### Ortak Geliştirme İpuçları
+
+- Her geliştirici kendi port numaralarını kullanabilir
+- Port yapılandırması tarayıcı localStorage'da saklanır
+- CORS ayarları development ortamında esnek yapılandırılmıştır
+- Production ortamında environment variables kullanın
+>>>>>>> Stashed changes

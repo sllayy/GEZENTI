@@ -90,6 +90,36 @@ namespace GeziRotasi.Controllers
             return Ok(new { message = "E-posta doğrulandı." });
         }
 
+        // POST api/auth/resend-code
+        [HttpPost("resend-code")]
+        public async Task<IActionResult> ResendCode(ResendCodeDto dto)
+        {
+            var user = await _users.FindByEmailAsync(dto.Email);
+            if (user == null) return BadRequest(new { message = "Kullanıcı bulunamadı." });
+
+            CodePurpose purpose;
+            if (!Enum.TryParse(dto.Purpose, out purpose))
+                return BadRequest(new { message = "Geçersiz kod amacı." });
+
+            try
+            {
+                await _codes.CreateAndSendAsync(user, purpose, TimeSpan.FromMinutes(15),
+                    code => purpose switch
+                    {
+                        CodePurpose.ConfirmEmail => $"<p>E-posta doğrulama kodunuz: <b>{code}</b></p><p>15 dakika içinde kullanın.</p>",
+                        CodePurpose.ResetPassword => $"<p>Şifre sıfırlama kodunuz: <b>{code}</b></p><p>15 dakika içinde kullanın.</p>",
+                        CodePurpose.UnlockAccount => $"<p>Hesap kilidi açma kodunuz: <b>{code}</b></p><p>15 dakika içinde kullanın.</p>",
+                        _ => $"<p>Doğrulama kodunuz: <b>{code}</b></p><p>15 dakika içinde kullanın.</p>"
+                    });
+
+                return Ok(new { message = "Kod yeniden gönderildi." });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Kod gönderilemedi.", detail = ex.Message });
+            }
+        }
+
         // POST api/auth/login
         [HttpPost("login")]
         public async Task<IActionResult> Login(LoginDto dto)

@@ -1,0 +1,20 @@
+{
+  "Version": 1,
+  "Hash": "+MUYXRMN7oTZetks5/RieuL8GSptaCpkN13mS9X6Tqk=",
+  "Source": "GeziRotasi.API",
+  "BasePath": "_content/GeziRotasi.API",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [
+    {
+      "Name": "GeziRotasi.API\\wwwroot",
+      "Source": "GeziRotasi.API",
+      "ContentRoot": "C:\\Users\\mebalci\\Desktop\\Projeler\\STAJ1\\GEZENTI\\wwwroot\\",
+      "BasePath": "_content/GeziRotasi.API",
+      "Pattern": "**"
+    }
+  ],
+  "Assets": [],
+  "Endpoints": []
+}

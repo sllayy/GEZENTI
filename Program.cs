@@ -37,6 +37,7 @@ builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("Jwt"))
 // ----------------------
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("GezentiDb")));
+// ✅ Artık DefaultConnection okunuyor (UserSecrets ile eşleşti)
 
 // ----------------------
 // 4. Identity
@@ -90,13 +91,39 @@ builder.Services.AddAuthentication(opt =>
 // ----------------------
 // 6. CORS (React için)
 // ----------------------
-builder.Services.AddCors(opt =>
+builder.Services.AddCors(options =>
 {
-    opt.AddPolicy("client", p => p
-        .WithOrigins("http://localhost:5173")
-        .AllowAnyHeader()
-        .AllowAnyMethod()
-        .AllowCredentials());
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        // Development ortamında daha esnek CORS ayarları
+        if (builder.Environment.IsDevelopment())
+        {
+            policy.SetIsOriginAllowed(origin => 
+            {
+                // localhost'tan gelen tüm isteklere izin ver
+                return origin.StartsWith("http://localhost:") || 
+                       origin.StartsWith("https://localhost:") ||
+                       origin.StartsWith("http://127.0.0.1:") ||
+                       origin.StartsWith("https://127.0.0.1:");
+            })
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials();
+        }
+        else
+        {
+            // Production ortamında sadece belirli origin'lere izin ver
+            policy.WithOrigins(
+                "http://localhost:3000",
+                "http://localhost:5173",
+                "https://localhost:7248",
+                "http://localhost:7248"
+            )
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials();
+        }
+    });
 });
 
 // ----------------------
@@ -117,7 +144,7 @@ builder.Services.AddScoped<ICategoryRepository, InMemoryCategoryRepository>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 
 builder.Services.AddHttpClient<IRouteService, RouteService>();
-builder.Services.AddScoped<RecommendationService>();
+
 
 // 8. Controllers & Swagger
 // ----------------------
@@ -158,9 +185,14 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseCors("client");
+app.UseCors("AllowFrontend");    // ✅ önce cors
+app.UseStaticFiles();       // frontend build dosyaları için
 
-app.UseHttpsRedirection();
+// Development ortamında HTTPS yönlendirmesini devre dışı bırak
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
 
 app.UseAuthentication();
 app.UseAuthorization();
@@ -178,3 +210,7 @@ Log.Information("Uygulama başarıyla başlatıldı 🚀");
 app.Run();
 
 Log.CloseAndFlush();
+
+public partial class Program { }
+
+

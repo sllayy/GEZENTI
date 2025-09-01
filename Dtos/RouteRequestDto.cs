@@ -1,8 +1,6 @@
 #nullable enable
-using System.Collections.Generic; // List<> kullanabilmek için gerekli.
-using System.ComponentModel.DataAnnotations; // Validasyon kuralları için gerekli.
+using System.Collections.Generic;
 
-// Sadece bir tane, doğru ve tutarlı bir namespace olmalı.
 namespace GeziRotasi.API.Dtos
 {
     /// <summary>
@@ -32,5 +30,21 @@ namespace GeziRotasi.API.Dtos
         // nearest için yarıçaplar (metre); opsiyonel
         public int[]? Radiuses { get; set; }
         public int UserId { get; set; }
+
+        /// <summary>
+        /// Kullanıcının seçtiği rota başlangıç saati (ör. 8)
+        /// </summary>
+        public int MinStartTimeHour { get; set; } = 8;
+
+        /// <summary>
+        /// Kullanıcının seçtiği rota bitiş saati (ör. 18)
+        /// </summary>
+        public int MaxEndTimeHour { get; set; } = 18;
+
+        /// <summary>
+        /// Kullanıcının toplam ayırabileceği süre (dakika cinsinden). 
+        /// Örn: 300 = 5 saat
+        /// </summary>
+        public int TotalAvailableMinutes { get; set; } = 0;
     }
 }

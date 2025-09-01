@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEdit, faPlus } from '@fortawesome/free-solid-svg-icons';
+import { authAPI } from '../services/api';
 
 const ProfilePage = () => {
     const navigate = useNavigate();
@@ -11,33 +12,27 @@ const ProfilePage = () => {
     const [error, setError] = useState('');
 
     useEffect(() => {
-        const token = localStorage.getItem("authToken");
+        const token = localStorage.getItem("jwtToken");
         if (!token) {
             setError("Lütfen giriş yapın.");
             setLoading(false);
             return;
         }
 
-        fetch('/api/profile', {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            }
-        })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Yetkilendirme hatası. Lütfen tekrar giriş yapın.');
-                }
-                return response.json();
-            })
-            .then(data => {
-                setProfileData(data);
+        // Auth API'den kullanıcı bilgilerini al
+        authAPI.getMe()
+            .then(res => {
+                setProfileData(res);
                 setLoading(false);
             })
             .catch(err => {
                 console.error("Profil verisi çekilirken hata:", err);
-                setError(err.message);
+                if (err.response?.status === 401) {
+                    setError("Oturum süreniz dolmuş. Lütfen tekrar giriş yapın.");
+                    localStorage.removeItem("jwtToken");
+                } else {
+                    setError("Profil bilgileri alınamadı. Lütfen tekrar deneyin.");
+                }
                 setLoading(false);
             });
     }, []);
@@ -49,7 +44,7 @@ const ProfilePage = () => {
     if (loading) return <div>Profil bilgileri yükleniyor...</div>;
     if (error) return <div>Hata: {error}</div>;
 
-    const userName = profileData?.name || "User";
+    const userName = profileData?.firstName || "User";
 
     return (
         <div className="min-h-screen bg-gray-50 p-6">

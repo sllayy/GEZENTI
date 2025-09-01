@@ -1,4 +1,4 @@
-@GeziRotasi.API_HostAddress = http://localhost:5136
+@GeziRotasi.API_HostAddress = http://localhost:7248
 
 GET {{GeziRotasi.API_HostAddress}}/weatherforecast/
 Accept: application/json

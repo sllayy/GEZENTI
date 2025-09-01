@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { InputText } from 'primereact/inputtext';
 import { Password } from 'primereact/password';
 import { Checkbox } from 'primereact/checkbox';
+import { authAPI } from '../services/api';
 
 // Google ikonu için basit bir SVG bileşeni
 const GoogleIcon = () => (
@@ -11,35 +12,90 @@ const GoogleIcon = () => (
     </svg>
 );
 
-const RegisterPage = ({ setIsLoggedIn }) => {
+const RegisterPage = ({ setIsLoggedIn, setUserName }) => {
     const [fullName, setFullName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [agreedToTerms, setAgreedToTerms] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState('');
     const navigate = useNavigate();
 
-    const handleRegister = (e) => {
+    const handleRegister = async (e) => {
         e.preventDefault();
+        setError('');
+        setIsLoading(true);
         
-        // Basit form doğrulaması
+        // Form doğrulaması
         if (!fullName || !email || !password) {
-            alert("Lütfen tüm zorunlu alanları doldurun.");
+            setError("Lütfen tüm zorunlu alanları doldurun.");
+            setIsLoading(false);
             return;
         }
         if (password !== confirmPassword) {
-            alert("Şifreler uyuşmuyor!");
+            setError("Şifreler uyuşmuyor!");
+            setIsLoading(false);
             return;
         }
         if (!agreedToTerms) {
-            alert("Devam etmek için kullanım koşullarını kabul etmelisiniz.");
+            setError("Devam etmek için kullanım koşullarını kabul etmelisiniz.");
+            setIsLoading(false);
             return;
         }
 
-        // Başarılı kayıt simülasyonu
-        console.log("Kayıt başarılı:", { fullName, email });
-        setIsLoggedIn(true); // Kullanıcıyı otomatik olarak giriş yapmış say
-        navigate('/'); // Ana sayfaya yönlendir
+        // Ad ve soyadı ayır
+        const nameParts = fullName.trim().split(' ');
+        const firstName = nameParts[0] || '';
+        const lastName = nameParts.slice(1).join(' ') || '';
+
+        if (!firstName) {
+            setError("Lütfen en az bir ad girin.");
+            setIsLoading(false);
+            return;
+        }
+
+        try {
+            console.log("Kayıt işlemi başlatılıyor...");
+            console.log("Gönderilen veriler:", { firstName, lastName, email, password });
+
+            // API'ye kayıt isteği gönder
+            const response = await authAPI.register({
+                firstName,
+                lastName,
+                email,
+                password
+            });
+
+            console.log("Kayıt başarılı:", response);
+
+            // Başarılı kayıt sonrası işlemler - Kullanıcı henüz giriş yapmamış
+            // E-posta doğrulama sayfasına yönlendir
+            navigate(`/confirm-email?email=${encodeURIComponent(email)}`);
+            
+        } catch (err) {
+            console.error('Kayıt işlemi sırasında hata:', err);
+            
+            if (err.response) {
+                if (err.response.status === 400) {
+                    if (err.response.data.message) {
+                        setError(err.response.data.message);
+                    } else if (err.response.data.errors) {
+                        // Validation hatalarını birleştir
+                        const errorMessages = Object.values(err.response.data.errors).flat();
+                        setError(errorMessages.join(', '));
+                    } else {
+                        setError('Kayıt işlemi başarısız. Lütfen bilgilerinizi kontrol edin.');
+                    }
+                } else {
+                    setError('Sunucu hatası: ' + err.response.status);
+                }
+            } else {
+                setError('Ağ hatası veya bilinmeyen bir sorun oluştu.');
+            }
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (
@@ -62,6 +118,12 @@ const RegisterPage = ({ setIsLoggedIn }) => {
                        Bilgilerinizi girerek hızlıca kaydolun
                     </p>
                 </div>
+
+                {error && (
+                    <div className="p-4 text-sm text-red-700 bg-red-100 rounded-lg" role="alert">
+                        {error}
+                    </div>
+                )}
                 
                 <form className="space-y-4" onSubmit={handleRegister}>
                     <div>
@@ -96,8 +158,26 @@ const RegisterPage = ({ setIsLoggedIn }) => {
                     </div>
                     
                     <div className="pt-2">
-                         <button type="submit" className="w-full flex justify-center items-center px-4 py-3 border border-transparent text-base font-medium rounded-md text-white bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 transition-transform transform hover:scale-105">
-                            Hesap Oluştur
+                         <button 
+                            type="submit" 
+                            disabled={isLoading}
+                            className={`w-full flex justify-center items-center px-4 py-3 border border-transparent text-base font-medium rounded-md text-white transition-transform transform hover:scale-105 ${
+                                isLoading 
+                                    ? 'bg-gray-400 cursor-not-allowed' 
+                                    : 'bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600'
+                            }`}
+                        >
+                            {isLoading ? (
+                                <>
+                                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                    Kayıt Yapılıyor...
+                                </>
+                            ) : (
+                                'Hesap Oluştur'
+                            )}
                         </button>
                     </div>
                 </form>

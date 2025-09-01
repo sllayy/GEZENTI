@@ -14,6 +14,7 @@ namespace GeziRotasi.API.Services
         private readonly IConfiguration _config;
         private readonly ILogger<RouteService> _logger;
         private readonly AppDbContext _db;
+        private readonly string _osrmBaseUrl;
 
         // FE -> DB enum köprüsü
         private readonly Dictionary<string, PoiCategory> _themeMap = new()
@@ -25,9 +26,16 @@ namespace GeziRotasi.API.Services
             { "Alışveriş", PoiCategory.Alışveriş },
             { "Doğa", PoiCategory.Doğa },
             { "Eğlence", PoiCategory.Eğlence },
+            { "Eğlenc", PoiCategory.Eğlence },               // yazım hatası
+            { "Eğlence Yerleri", PoiCategory.Eğlence },      // varyasyon
             { "Müzik", PoiCategory.Müzik },
             { "Sahil", PoiCategory.Sahil },
             { "Park", PoiCategory.Park },
+            { "Kültür", PoiCategory.Kültür },
+            { "Karayolu", PoiCategory.Karayolu },
+            { "Kültürel Tesisler", PoiCategory.KültürelTesisler },
+            { "Önemli Noktalar", PoiCategory.OnemliNoktalar },
+            { "Tarihi ve Turistik Tesisler", PoiCategory.TarihiTuristikTesisler }
         };
 
         public RouteService(HttpClient httpClient, IConfiguration config, ILogger<RouteService> logger, AppDbContext db)
@@ -36,17 +44,17 @@ namespace GeziRotasi.API.Services
             _config = config;
             _logger = logger;
             _db = db;
+            _osrmBaseUrl = (_config["Osrm:BaseUrl"] ?? "http://localhost:8081").TrimEnd('/');
         }
 
         public async Task<RouteResponseDto> GetOptimizedRouteAsync(RouteRequestDto request, CancellationToken ct = default)
         {
-            // --- doğrulama
             if (request.Coordinates is null || request.Coordinates.Count < 2)
                 throw new ArgumentException("Rota için en az iki koordinat gereklidir.");
 
-            // --- kullanıcı tercihleri
-            var prefs = await _db.UserPreferences
-            .FirstOrDefaultAsync(p => p.UserId == request.UserId, ct);
+            // 1) Kullanıcı tercihleri
+            var prefs = await _db.UserPreferences.FirstOrDefaultAsync(p => p.UserId == request.UserId, ct);
+
             if (prefs is not null)
             {
                 if (!string.IsNullOrWhiteSpace(prefs.PreferredTransportationMode))
@@ -60,13 +68,13 @@ namespace GeziRotasi.API.Services
 
                 var nowHour = DateTime.Now.Hour;
                 if (nowHour < prefs.MinStartTimeHour || nowHour > prefs.MaxEndTimeHour)
-                    _logger.LogWarning("Kullanıcı saat tercihi dışında bir çağrı yapıldı: {NowHour}", nowHour);
+                    throw new InvalidOperationException("Seçilen saat kullanıcı tercihlerine uymuyor.");
 
                 if (prefs.ConsiderTraffic)
                     _logger.LogInformation("Trafik dikkate alınması istendi (OSRM native desteklemez).");
             }
 
-            //  Tema -> POI filtreleme
+            // 2) Tema -> POI filtreleme
             List<Poi> poisForRoute;
             if (prefs != null && !string.IsNullOrEmpty(prefs.PreferredThemes))
             {
@@ -90,7 +98,29 @@ namespace GeziRotasi.API.Services
                 poisForRoute = await _db.Pois.ToListAsync(ct);
             }
 
-            // --- OSRM waypoint listesi
+            // 2.1) Süreye göre POI sayısını kısıtla
+            if (request.TotalAvailableMinutes > 0)
+            {
+                const int avgVisitMinutes = 30; // her POI için ortalama süre
+                var maxPois = request.TotalAvailableMinutes / avgVisitMinutes;
+
+                if (poisForRoute.Count > maxPois)
+                {
+                    poisForRoute = poisForRoute.Take(maxPois).ToList();
+                    _logger.LogInformation("Süre kısıtlaması: {MaxPois} POI seçildi (toplam süre: {TotalMinutes} dk).",
+                        maxPois, request.TotalAvailableMinutes);
+                }
+            }
+
+            // 2.2) Hard-limit safeguard (URI çok uzun olmasın diye)
+            const int hardLimit = 20;
+            if (poisForRoute.Count > hardLimit)
+            {
+                poisForRoute = poisForRoute.Take(hardLimit).ToList();
+                _logger.LogWarning("Hard limit uygulandı: {HardLimit} POI seçildi.", hardLimit);
+            }
+
+            // 3) Koordinatlar (start -> POIs -> end)
             var finalCoords = new List<double[]>();
             var start = request.Coordinates.First();
             finalCoords.Add(new[] { start[0], start[1] });
@@ -112,17 +142,15 @@ namespace GeziRotasi.API.Services
                 finalCoords.Add(new[] { end[0], end[1] });
             }
 
-            // --- gelen koordinatlar string’e çevrilir
             var mode = NormalizeMode(request.Mode);
             var coordsString = string.Join(";",
-                request.Coordinates.Select(c =>
-                    $"{c[0].ToString(CultureInfo.InvariantCulture)},{c[1].ToString(CultureInfo.InvariantCulture)}"));
+                finalCoords.Select(c => $"{c[0].ToString(CultureInfo.InvariantCulture)},{c[1].ToString(CultureInfo.InvariantCulture)}"));
 
             var url = BuildOsrmUrl(mode, coordsString, request);
             _logger.LogInformation("OSRM URL: {Url}", url);
 
             var body = await FetchOsrmAsync(url, ct);
-            var response = ParseOsrm(body, request.OptimizeOrder, request.Preference);
+            var response = ParseOsrm(body, request.OptimizeOrder);
             response.PreferencesApplied = prefs is not null;
             return response;
         }
@@ -131,13 +159,12 @@ namespace GeziRotasi.API.Services
         {
             var geometries = request.GeoJson ? "geojson" : "polyline";
 
-            // --- baseUrl seçimi (hem senin hem arkadaşının mantığı birleşti)
-            string baseUrl = mode switch
+            // Docker OSRM port seçimi
+            var baseUrl = mode switch
             {
-                "driving" => (_config["Osrm:CarBaseUrl"] ?? _config["Osrm:BaseUrl"] ?? "http://localhost:5002"),
-                "foot" => (_config["Osrm:FootBaseUrl"] ?? _config["Osrm:BaseUrl"] ?? "http://localhost:5003"),
-                "cycling" => (_config["Osrm:BikeBaseUrl"] ?? _config["Osrm:BaseUrl"] ?? "http://localhost:5004"),
-                _ => (_config["Osrm:BaseUrl"] ?? "http://localhost:8081")
+                "driving" => "http://localhost:5002",
+                "foot" => "http://localhost:5003",
+                _ => _osrmBaseUrl
             };
 
             if (request.OptimizeOrder)
@@ -150,7 +177,9 @@ namespace GeziRotasi.API.Services
             else
             {
                 var query = $"overview=full&geometries={geometries}";
-                if (request.Alternatives > 0) query += $"&alternatives={Math.Min(request.Alternatives, 3)}";
+                if (request.Alternatives > 0)
+                    query += $"&alternatives={Math.Min(request.Alternatives, 3)}";
+
                 return $"{baseUrl}/route/v1/{mode}/{coordsString}?{query}";
             }
         }
@@ -169,52 +198,24 @@ namespace GeziRotasi.API.Services
             return body;
         }
 
-        private RouteResponseDto ParseOsrm(string body, bool isTrip, string? preference)
+        private RouteResponseDto ParseOsrm(string body, bool isTrip)
         {
             using var doc = JsonDocument.Parse(body);
             var root = doc.RootElement;
             var key = isTrip ? "trips" : "routes";
 
-            if (!root.TryGetProperty(key, out var items) || items.ValueKind != JsonValueKind.Array || items.GetArrayLength() == 0)
+            if (!root.TryGetProperty(key, out var items) ||
+                items.ValueKind != JsonValueKind.Array ||
+                items.GetArrayLength() == 0)
+            {
                 throw new InvalidOperationException($"OSRM {key} yanıtı beklenen formatta değil veya boş.");
-
-            // --- alternatifler
-            var variants = new List<RouteVariantDto>();
-            foreach (var it in items.EnumerateArray())
-            {
-                variants.Add(new RouteVariantDto
-                {
-                    Distance = it.GetProperty("distance").GetDouble(),
-                    Duration = it.GetProperty("duration").GetDouble(),
-                    Geometry = it.GetProperty("geometry").Clone(),
-                    IsPrimary = false
-                });
             }
 
-            // --- kullanıcı tercihi ile primary seçimi
-            int pick = 0;
-            if (!string.IsNullOrWhiteSpace(preference))
-            {
-                var pref = preference.Trim().ToLowerInvariant();
-                if (pref is "shortest" or "balanced" or "fastest")
-                {
-                    double scoreMin = double.MaxValue;
-                    for (int i = 0; i < variants.Count; i++)
-                    {
-                        var v = variants[i];
-                        double score = pref switch
-                        {
-                            "shortest" => v.Distance,
-                            "balanced" => v.Distance * 0.5 + v.Duration * 0.5,
-                            _ => v.Duration // fastest
-                        };
-                        if (score < scoreMin) { scoreMin = score; pick = i; }
-                    }
-                }
-            }
-            variants[pick].IsPrimary = true;
+            var item = items[0];
+            var distance = item.GetProperty("distance").GetDouble();
+            var duration = item.GetProperty("duration").GetDouble();
+            var geometry = item.GetProperty("geometry").Clone();
 
-            // --- waypoint order (sadece /trip için)
             List<int>? order = null;
             if (isTrip && root.TryGetProperty("waypoints", out var wps) && wps.ValueKind == JsonValueKind.Array)
             {
@@ -224,14 +225,12 @@ namespace GeziRotasi.API.Services
                            .ToList();
             }
 
-            var primary = variants[pick];
             return new RouteResponseDto
             {
-                Distance = primary.Distance,
-                Duration = primary.Duration,
-                Geometry = primary.Geometry,
-                WaypointOrder = order,
-                Alternatives = variants
+                Distance = distance,
+                Duration = duration,
+                Geometry = geometry,
+                WaypointOrder = order
             };
         }
 
@@ -241,11 +240,11 @@ namespace GeziRotasi.API.Services
             {
                 "car" or "driving" => "driving",
                 "foot" or "walk" or "walking" => "foot",
-                "bike" or "bicycle" or "cycling" => "cycling", // arkadaştan geleni de tuttum
                 _ => "driving"
             };
         }
 
-        private static string Truncate(string s, int max) => s.Length <= max ? s : s[..max] + "...";
+        private static string Truncate(string s, int max) =>
+            s.Length <= max ? s : s[..max] + "...";
     }
 }

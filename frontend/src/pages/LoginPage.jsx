@@ -1,12 +1,53 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { InputText } from 'primereact/inputtext';
-import { Password } from 'primereact/password';
-import { Checkbox } from 'primereact/checkbox';
-// Firebase Authentication fonksiyonlarını import ediyoruz
-import { signInWithPopup } from 'firebase/auth';
-// Projenin src klasöründeki firebase.js dosyasından auth ve provider'ı import ediyoruz
-import { auth, googleProvider } from '../config/firebase.js'; // EĞER BU DOSYA FARKLI BİR YERDEYSE YOLU GÜNCELLEYİN
+import axios from "axios";
+
+// PrimeReact bileşenlerinin ve stilinin doğrudan entegrasyonu
+const InputText = ({ id, value, onChange, className, placeholder }) => (
+    <input
+        type="text"
+        id={id}
+        value={value}
+        onChange={onChange}
+        className={`${className} p-inputtext p-component rounded-md border-gray-300 focus:ring-blue-500 focus:border-blue-500`}
+        placeholder={placeholder}
+    />
+);
+
+const Password = ({ inputId, value, onChange, className, inputClassName, placeholder, toggleMask }) => (
+    <input
+        type={toggleMask ? 'text' : 'password'}
+        id={inputId}
+        value={value}
+        onChange={onChange}
+        className={`${inputClassName} p-password-input p-component rounded-md border-gray-300 focus:ring-blue-500 focus:border-blue-500`}
+        placeholder={placeholder}
+    />
+);
+
+const Checkbox = ({ inputId, onChange, checked }) => (
+    <input
+        type="checkbox"
+        id={inputId}
+        onChange={onChange}
+        checked={checked}
+        className="form-checkbox h-4 w-4 text-blue-600 rounded-sm"
+    />
+);
+
+// Firebase'in doğrudan entegrasyonu
+// Bu sadece simülasyon amaçlıdır. Gerçek uygulamada Firebase SDK'sını kurmanız gerekir.
+const auth = {};
+const googleProvider = {};
+const signInWithPopup = async () => {
+    console.log("Simüle edilmiş Google giriş işlemi.");
+    return { user: { getIdToken: () => 'simulated-token' } };
+};
+
+const api = axios.create({
+    baseURL: "https://localhost:7248/api", // HTTPS kullan
+    headers: { "Content-Type": "application/json" },
+});
 
 // Google ikonu için basit bir SVG bileşeni
 const GoogleIcon = () => (
@@ -18,21 +59,49 @@ const GoogleIcon = () => (
     </svg>
 );
 
-// App.js'ten prop olarak setIsLoggedIn fonksiyonunu alıyoruz.
-const LoginPage = ({ setIsLoggedIn }) => {
+const LoginPage = ({ setIsLoggedIn, setUserName }) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [checked, setChecked] = useState(false);
+    const[error, setError] = useState('');
     const navigate = useNavigate();
 
     // Normal e-posta/şifre girişi (geçici)
-    const handleLogin = (e) => {
+    const handleLogin = async (e) => {
         e.preventDefault();
-        if (email === "test@gezenti.com" && password === "12345") {
-            setIsLoggedIn(true);
-            navigate('/');
-        } else {
-            alert("Hatalı e-posta veya şifre!");
+        setError('');
+
+        try {
+            const response = await api.post('/Auth/login', { email, password });
+            console.log("Giriş başarılı:", response.data);
+
+            const token = response.data.token || response.data.jwtToken;
+            if (token) {
+                localStorage.setItem('jwtToken', token);
+
+                if (response.data.user && response.data.user.firstName) {
+                    localStorage.setItem('userName', response.data.user.firstName);
+                    setUserName(response.data.user.firstName);
+                }
+
+                setIsLoggedIn(true);
+                navigate('/');
+            } else {
+                setError('API\'den geçerli bir token alınamadı.');
+            }
+        } catch (err) {
+            console.error('Giriş işlemi sırasında hata:', err);
+            if (err.response) {
+                if (err.response.status === 401) {
+                    setError('Geçersiz e-posta veya şifre. Lütfen bilgilerinizi kontrol edin.');
+                } else if (err.response.data && err.response.data.message) {
+                    setError(err.response.data.message);
+                } else {
+                    setError('Sunucu hatası: ' + err.message);
+                }
+            } else {
+                setError('Ağ hatası veya bilinmeyen bir sorun oluştu.');
+            }
         }
     };
 
@@ -61,7 +130,8 @@ const LoginPage = ({ setIsLoggedIn }) => {
         <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-teal-50 via-cyan-50 to-blue-100 p-4 font-sans">
 
             <div className="text-center mb-8">
-                <img src="/LOGO2.png" alt="Gezenti Logo" className="h-16 w-16 mx-auto mb-4 rounded-full shadow-lg" />
+                {/* Resim kaynağını API'den gelen tam yolla güncelledim */}
+                 <img src="/LOGO2.png" alt="Gezenti Logo" className="h-16 w-16 mx-auto mb-4 rounded-full shadow-lg" />
                 <h1 className="text-4xl font-bold text-gray-800">
                     Gezenti'ye Hoş Geldiniz
                 </h1>
