@@ -1,8 +1,12 @@
-import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import React, { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
+// Firebase importları 🔝 burada olmalı
+import { signInWithPopup } from "firebase/auth";
+import { auth, googleProvider } from "../config/firebase";
 
-// PrimeReact bileşenlerinin ve stilinin doğrudan entegrasyonu
+
+// Input bileşenleri
 const InputText = ({ id, value, onChange, className, placeholder }) => (
     <input
         type="text"
@@ -14,9 +18,17 @@ const InputText = ({ id, value, onChange, className, placeholder }) => (
     />
 );
 
-const Password = ({ inputId, value, onChange, className, inputClassName, placeholder, toggleMask }) => (
+const Password = ({
+    inputId,
+    value,
+    onChange,
+    className,
+    inputClassName,
+    placeholder,
+    toggleMask,
+}) => (
     <input
-        type={toggleMask ? 'text' : 'password'}
+        type={toggleMask ? "text" : "password"}
         id={inputId}
         value={value}
         onChange={onChange}
@@ -35,109 +47,113 @@ const Checkbox = ({ inputId, onChange, checked }) => (
     />
 );
 
-// Firebase'in doğrudan entegrasyonu
-// Bu sadece simülasyon amaçlıdır. Gerçek uygulamada Firebase SDK'sını kurmanız gerekir.
-const auth = {};
-const googleProvider = {};
-const signInWithPopup = async () => {
-    console.log("Simüle edilmiş Google giriş işlemi.");
-    return { user: { getIdToken: () => 'simulated-token' } };
-};
-
-const api = axios.create({
-    baseURL: "https://localhost:7248/api", // HTTPS kullan
-    headers: { "Content-Type": "application/json" },
-});
-
-// Google ikonu için basit bir SVG bileşeni
+// Google Icon
 const GoogleIcon = () => (
     <svg className="w-5 h-5 mr-2" viewBox="0 0 48 48">
-        <path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12s5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24s8.955,20,20,20s20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"></path>
-        <path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"></path>
-        <path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"></path>
-        <path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.574l6.19,5.238C39.988,35.69,44,30.169,44,24C44,22.659,43.862,21.35,43.611,20.083z"></path>
+        <path
+            fill="#FFC107"
+            d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12s5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24s8.955,20,20,20s20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"
+        ></path>
+        <path
+            fill="#FF3D00"
+            d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"
+        ></path>
+        <path
+            fill="#4CAF50"
+            d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"
+        ></path>
+        <path
+            fill="#1976D2"
+            d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.574l6.19,5.238C39.988,35.69,44,30.169,44,24C44,22.659,43.862,21.35,43.611,20.083z"
+        ></path>
     </svg>
 );
 
 const LoginPage = ({ setIsLoggedIn, setUserName }) => {
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
     const [checked, setChecked] = useState(false);
-    const[error, setError] = useState('');
+    const [error, setError] = useState("");
     const navigate = useNavigate();
 
-    // Normal e-posta/şifre girişi (geçici)
+    // Normal giriş
     const handleLogin = async (e) => {
         e.preventDefault();
-        setError('');
+        setError("");
 
         try {
-            const response = await api.post('/Auth/login', { email, password });
+            const response = await axios.post("https://localhost:7248/api/Auth/login", {
+                email,
+                password,
+            });
             console.log("Giriş başarılı:", response.data);
 
             const token = response.data.token || response.data.jwtToken;
             if (token) {
-                localStorage.setItem('jwtToken', token);
+                localStorage.setItem("jwtToken", token);
 
                 if (response.data.user && response.data.user.firstName) {
-                    localStorage.setItem('userName', response.data.user.firstName);
+                    localStorage.setItem("userName", response.data.user.firstName);
                     setUserName(response.data.user.firstName);
                 }
 
                 setIsLoggedIn(true);
-                navigate('/');
+                navigate("/");
             } else {
-                setError('API\'den geçerli bir token alınamadı.');
+                setError("API'den geçerli bir token alınamadı.");
             }
         } catch (err) {
-            console.error('Giriş işlemi sırasında hata:', err);
+            console.error("Giriş işlemi sırasında hata:", err);
             if (err.response) {
                 if (err.response.status === 401) {
-                    setError('Geçersiz e-posta veya şifre. Lütfen bilgilerinizi kontrol edin.');
+                    setError("Geçersiz e-posta veya şifre.");
                 } else if (err.response.data && err.response.data.message) {
                     setError(err.response.data.message);
                 } else {
-                    setError('Sunucu hatası: ' + err.message);
+                    setError("Sunucu hatası: " + err.message);
                 }
             } else {
-                setError('Ağ hatası veya bilinmeyen bir sorun oluştu.');
+                setError("Ağ hatası veya bilinmeyen bir sorun oluştu.");
             }
         }
     };
 
-    // Google ile giriş fonksiyonu
+    // Google login
     const handleGoogleLogin = async () => {
         try {
             const result = await signInWithPopup(auth, googleProvider);
-            const token = await result.user.getIdToken();
+            const idToken = await result.user.getIdToken();
+            console.log("🔥 Firebase ID Token:", idToken);
 
-            // Backend ile konuşmak için gereken token'ı tarayıcı hafızasına kaydediyoruz.
-            localStorage.setItem("authToken", token);
+            const r = await axios.post("https://localhost:7248/api/auth/google-firebase", { idToken });
+            console.log("✅ Backend cevabı:", r.data);
 
-            // Uygulamanın genel state'ini güncelliyoruz.
+            const token = r.data?.token;
+            if (token) localStorage.setItem("jwtToken", token);
+
+            if (r.data?.user?.firstName) {
+                localStorage.setItem("userName", r.data.user.firstName);
+                setUserName(r.data.user.firstName);
+            }
+
             setIsLoggedIn(true);
-
-            // Kullanıcıyı ana sayfaya yönlendiriyoruz.
-            navigate('/');
+            navigate("/");
         } catch (error) {
-            console.error("Google ile giriş sırasında hata:", error);
-            alert("Google ile giriş yapılamadı. Lütfen tekrar deneyin. Hata kodu: " + error.code);
+            console.error("❌ Google login hatası:", error);
+            alert("Google login başarısız: " + error.message);
         }
     };
 
-
     return (
         <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-teal-50 via-cyan-50 to-blue-100 p-4 font-sans">
-
             <div className="text-center mb-8">
-                {/* Resim kaynağını API'den gelen tam yolla güncelledim */}
-                 <img src="/LOGO2.png" alt="Gezenti Logo" className="h-16 w-16 mx-auto mb-4 rounded-full shadow-lg" />
-                <h1 className="text-4xl font-bold text-gray-800">
-                    Gezenti'ye Hoş Geldiniz
-                </h1>
-                <p className="text-gray-600 mt-2">
-                    Macera dolu rotalar keşfetmeye hazır mısınız?
-                </p>
+                <img
+                    src="/LOGO2.png"
+                    alt="Gezenti Logo"
+                    className="h-16 w-16 mx-auto mb-4 rounded-full shadow-lg"
+                />
+                <h1 className="text-4xl font-bold text-gray-800">Gezenti'ye Hoş Geldiniz</h1>
+                <p className="text-gray-600 mt-2">Macera dolu rotalar keşfetmeye hazır mısınız?</p>
             </div>
 
             <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8 space-y-6">
@@ -180,16 +196,29 @@ const LoginPage = ({ setIsLoggedIn, setUserName }) => {
 
                     <div className="flex items-center justify-between text-sm">
                         <div className="flex items-center">
-                            <Checkbox inputId="rememberMe" onChange={e => setChecked(e.checked)} checked={checked}></Checkbox>
-                            <label htmlFor="rememberMe" className="ml-2 text-gray-600 cursor-pointer">Beni hatırla</label>
+                            <Checkbox
+                                inputId="rememberMe"
+                                onChange={(e) => setChecked(e.checked)}
+                                checked={checked}
+                            />
+                            <label htmlFor="rememberMe" className="ml-2 text-gray-600 cursor-pointer">
+                                Beni hatırla
+                            </label>
                         </div>
-                        <a href="#" className="font-medium text-blue-600 hover:text-blue-500">
+                        <p
+                            onClick={() => navigate("/forgot-password")}
+                            className="font-medium text-blue-600 hover:text-blue-500 cursor-pointer"
+                        >
                             Şifremi unuttum
-                        </a>
+                        </p>
+
                     </div>
 
                     <div>
-                        <button type="submit" className="w-full flex justify-center items-center px-4 py-3 border border-transparent text-base font-medium rounded-md text-white bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-transform transform hover:scale-105">
+                        <button
+                            type="submit"
+                            className="w-full flex justify-center items-center px-4 py-3 border border-transparent text-base font-medium rounded-md text-white bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-transform transform hover:scale-105"
+                        >
                             Giriş Yap
                         </button>
                     </div>
@@ -204,9 +233,7 @@ const LoginPage = ({ setIsLoggedIn, setUserName }) => {
                     </div>
                 </div>
 
-
                 <div>
-                    {/* Google giriş fonksiyonunu butona bağlıyoruz */}
                     <button
                         onClick={handleGoogleLogin}
                         className="w-full inline-flex justify-center items-center py-3 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-base font-medium text-gray-700 hover:bg-gray-50 transition-colors"
@@ -216,7 +243,7 @@ const LoginPage = ({ setIsLoggedIn, setUserName }) => {
                 </div>
 
                 <p className="text-sm text-center text-gray-600">
-                    Hesabınız yok mu?{' '}
+                    Hesabınız yok mu?{" "}
                     <Link to="/register" className="font-medium text-blue-600 hover:text-blue-500">
                         Üye olun
                     </Link>
@@ -224,7 +251,15 @@ const LoginPage = ({ setIsLoggedIn, setUserName }) => {
             </div>
 
             <div className="text-center mt-8 text-xs text-gray-500">
-                Giriş yaparak <a href="#" className="underline hover:text-gray-700">Kullanım Koşulları</a>'nı ve <a href="#" className="underline hover:text-gray-700">Gizlilik Politikası</a>'nı kabul etmiş olursunuz.
+                Giriş yaparak{" "}
+                <a href="#" className="underline hover:text-gray-700">
+                    Kullanım Koşulları
+                </a>
+                'nı ve{" "}
+                <a href="#" className="underline hover:text-gray-700">
+                    Gizlilik Politikası
+                </a>
+                'nı kabul etmiş olursunuz.
             </div>
         </div>
     );

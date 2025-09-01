@@ -371,6 +371,8 @@ namespace GeziRotasi.Controllers
             }
             catch (Exception ex)
             {
+                // 🔥 Hata mesajını hem loga yaz hem response içine koy
+                Console.WriteLine("Google token doğrulama hatası: " + ex.Message);
                 return Unauthorized(new { message = "Firebase token geçersiz", detail = ex.Message });
             }
 
@@ -379,7 +381,6 @@ namespace GeziRotasi.Controllers
             if (string.IsNullOrWhiteSpace(email))
                 return Unauthorized(new { message = "Email bulunamadı." });
 
-            // Kullanıcı var mı bak
             var user = await _users.FindByEmailAsync(email);
             if (user == null)
             {
@@ -387,9 +388,8 @@ namespace GeziRotasi.Controllers
                 await _users.CreateAsync(user);
             }
 
-            // JWT üret
             var (token, exp) = _tokens.Create(user);
-            return Ok(new { token, user = new { user.Id, user.FirstName, user.LastName, user.Email }});
+            return Ok(new { token, user = new { user.Id, user.FirstName, user.LastName, user.Email } });
         }
     }
 }

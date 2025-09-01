@@ -1,23 +1,23 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\mebalci\\Desktop\\Projeler\\STAJ1\\GEZENTI\\GeziRotasi.API.csproj": {}
+    "C:\\Users\\ahmet\\source\\repos\\GEZENTI\\GeziRotasi.API.csproj": {}
   },
   "projects": {
-    "C:\\Users\\mebalci\\Desktop\\Projeler\\STAJ1\\GEZENTI\\GeziRotasi.API.csproj": {
+    "C:\\Users\\ahmet\\source\\repos\\GEZENTI\\GeziRotasi.API.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\mebalci\\Desktop\\Projeler\\STAJ1\\GEZENTI\\GeziRotasi.API.csproj",
+        "projectUniqueName": "C:\\Users\\ahmet\\source\\repos\\GEZENTI\\GeziRotasi.API.csproj",
         "projectName": "GeziRotasi.API",
-        "projectPath": "C:\\Users\\mebalci\\Desktop\\Projeler\\STAJ1\\GEZENTI\\GeziRotasi.API.csproj",
-        "packagesPath": "C:\\Users\\mebalci\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\mebalci\\Desktop\\Projeler\\STAJ1\\GEZENTI\\obj\\",
+        "projectPath": "C:\\Users\\ahmet\\source\\repos\\GEZENTI\\GeziRotasi.API.csproj",
+        "packagesPath": "C:\\Users\\ahmet\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\ahmet\\source\\repos\\GEZENTI\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\mebalci\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\ahmet\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
@@ -25,6 +25,8 @@
           "net8.0"
         ],
         "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "C:\\Program Files\\dotnet\\library-packs": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -43,7 +45,7 @@
           "auditLevel": "low",
           "auditMode": "direct"
         },
-        "SdkAnalysisLevel": "9.0.200"
+        "SdkAnalysisLevel": "9.0.300"
       },
       "frameworks": {
         "net8.0": {
@@ -133,7 +135,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.201/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.304/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

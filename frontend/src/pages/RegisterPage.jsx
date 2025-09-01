@@ -4,6 +4,9 @@ import { InputText } from 'primereact/inputtext';
 import { Password } from 'primereact/password';
 import { Checkbox } from 'primereact/checkbox';
 import { authAPI } from '../services/api';
+import { signInWithPopup } from "firebase/auth";
+import { auth, googleProvider } from "../config/firebase";
+import axios from "axios";
 
 // Google ikonu için basit bir SVG bileşeni
 const GoogleIcon = () => (
@@ -98,6 +101,36 @@ const RegisterPage = ({ setIsLoggedIn, setUserName }) => {
         }
     };
 
+    const handleGoogleRegister = async () => {
+        try {
+            // 1. Firebase popup
+            const result = await signInWithPopup(auth, googleProvider);
+
+            // 2. Token al
+            const idToken = await result.user.getIdToken();
+            console.log("🔥 Firebase ID Token:", idToken);
+
+            // 3. Backend'e gönder
+            const r = await axios.post("https://localhost:7248/api/auth/google-firebase", { idToken });
+            console.log("✅ Backend cevabı:", r.data);
+
+            // 4. JWT kaydet
+            const token = r.data?.token;
+            if (token) localStorage.setItem("jwtToken", token);
+
+            if (r.data?.user?.firstName) {
+                localStorage.setItem("userName", r.data.user.firstName);
+                setUserName(r.data.user.firstName);
+            }
+
+            setIsLoggedIn(true);
+            navigate("/");
+        } catch (error) {
+            console.error("❌ Google register hatası:", error);
+            alert("Google ile kayıt başarısız: " + error.message);
+        }
+    };
+
     return (
         <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-teal-50 via-cyan-50 to-blue-100 p-4 font-sans">
             
@@ -188,7 +221,10 @@ const RegisterPage = ({ setIsLoggedIn, setUserName }) => {
                 </div>
 
                 <div>
-                    <button className="w-full inline-flex justify-center items-center py-3 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-base font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+                    <button
+                        onClick={handleGoogleRegister}
+                        className="w-full inline-flex justify-center items-center py-3 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-base font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                    >
                         <GoogleIcon /> Google ile Kaydol
                     </button>
                 </div>

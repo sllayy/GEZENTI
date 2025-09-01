@@ -27,6 +27,7 @@ import "primeicons/primeicons.css";
 
 // Auth
 import PrivateRoute from "./components/Auth/PrivateRoute";
+import ForgotPasswordPage from "./pages/ForgotPasswordPage.jsx";
 
 function App() {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -138,6 +139,11 @@ function App() {
                                     <RouteBuilderPage />
                                 </PrivateRoute>
                             }
+                        />
+
+                        <Route
+                            path="/forgot-password"
+                            element={<ForgotPasswordPage />}
                         />
 
                         {/* 404 */}

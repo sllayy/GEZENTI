@@ -3,13 +3,13 @@ import { getAuth, GoogleAuthProvider } from "firebase/auth";
 
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-  apiKey: "AIzaSyB0yitPa2tU8kY391MslBHRYZ5fV3R6Cf8",
-  authDomain: "geziproject2.firebaseapp.com",
-  projectId: "geziproject2",
-  storageBucket: "geziproject2.firebasestorage.app",
-  messagingSenderId: "412024861292",
-  appId: "1:412024861292:web:05dec515595dc640abde49",
-  measurementId: "G-P0RN1D8LCK"
+    apiKey: "AIzaSyAZRfHVjAixK5cAJ6rcq6hmiDvo5LMnDho",
+    authDomain: "gezenti2-675f1.firebaseapp.com",
+    projectId: "gezenti2-675f1",
+    storageBucket: "gezenti2-675f1.firebasestorage.app",
+    messagingSenderId: "48303852061",
+    appId: "1:48303852061:web:784e839ba34ac4a10614f4",
+    measurementId: "G-L2F0Y5CB4F"
 };
 
 // Firebase'i başlat
