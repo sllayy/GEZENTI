@@ -1,6 +1,8 @@
 using GeziRotasi.API.Dtos;
 using GeziRotasi.API.Services;
 using Microsoft.AspNetCore.Mvc;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace GeziRotasi.API.Controllers
 {
@@ -18,7 +20,7 @@ namespace GeziRotasi.API.Controllers
         }
 
         /// <summary>
-        /// Verilen POI'lar ve kullanıcı tercihleri doğrultusunda optimize edilmiş rota oluşturur.
+        /// Verilen POI'lar için optimize edilmiş bir rota oluşturur.
         /// OptimizeOrder=true ise /trip, değilse /route OSRM endpoint'ini çağırır.
         /// </summary>
         [HttpPost("optimize")]
@@ -30,6 +32,7 @@ namespace GeziRotasi.API.Controllers
             }
 
             var result = await _routeService.GetOptimizedRouteAsync(request, ct);
+
             return Ok(result);
         }
 
@@ -39,10 +42,13 @@ namespace GeziRotasi.API.Controllers
         [HttpPost("{routeId:int}/feedback")]
         public IActionResult SubmitRouteFeedback(int routeId, [FromBody] CreateRouteFeedbackDto feedbackDto)
         {
+            // Gelen verileri logluyoruz
             _logger.LogInformation("RotaID: {RouteId}, Puan: {Rating}, Yorum: {Comment}",
                 routeId, feedbackDto.Rating, feedbackDto.Comment);
 
-            // TODO: Veritabanına kaydetme işlemi için RouteService kullanılabilir.
+            // TODO: Veritabanına kaydetme işlemi için servis çağırılacak.
+            // örn: await _routeService.SaveFeedbackAsync(routeId, feedbackDto);
+
             return Ok(new { message = "Geri bildiriminiz için teşekkür ederiz!" });
         }
     }
