@@ -69,9 +69,9 @@ namespace GeziRotasi.API.Data
                 .HasConversion<string>();
         }
 
-        internal async Task SaveChangesAsync()
+        public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
-            throw new NotImplementedException();
+            return base.SaveChangesAsync(cancellationToken);
         }
     }
 }

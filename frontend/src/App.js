@@ -25,6 +25,9 @@ import "primereact/resources/themes/saga-blue/theme.css";
 import "primereact/resources/primereact.min.css";
 import "primeicons/primeicons.css";
 
+// Auth
+import PrivateRoute from "./components/Auth/PrivateRoute";
+
 function App() {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [userName, setUserName] = useState("");
@@ -55,6 +58,7 @@ function App() {
 
                 <main className="flex-grow">
                     <Routes>
+                        {/* Ana sayfa herkese açık */}
                         <Route
                             path="/"
                             element={
@@ -64,10 +68,8 @@ function App() {
                                 </div>
                             }
                         />
-                        <Route path="/routes" element={<RoutesPage />} />
-                        <Route path="/poi" element={<DiscoverPoi />} />
-                        <Route path="/map" element={<MapComponent />} />
 
+                        {/* Public Auth Sayfaları */}
                         <Route
                             path="/login"
                             element={
@@ -96,20 +98,49 @@ function App() {
                             }
                         />
 
+                        {/* Private Sayfalar */}
+                        <Route
+                            path="/routes"
+                            element={
+                                <PrivateRoute isLoggedIn={isLoggedIn}>
+                                    <RoutesPage />
+                                </PrivateRoute>
+                            }
+                        />
+                        <Route
+                            path="/poi"
+                            element={
+                                <PrivateRoute isLoggedIn={isLoggedIn}>
+                                    <DiscoverPoi />
+                                </PrivateRoute>
+                            }
+                        />
+                        <Route
+                            path="/map"
+                            element={
+                                <PrivateRoute isLoggedIn={isLoggedIn}>
+                                    <MapComponent />
+                                </PrivateRoute>
+                            }
+                        />
                         <Route
                             path="/profile"
                             element={
-                                isLoggedIn ? (
+                                <PrivateRoute isLoggedIn={isLoggedIn}>
                                     <ProfilePage />
-                                ) : (
-                                    <LoginPage
-                                        setIsLoggedIn={setIsLoggedIn}
-                                        setUserName={setUserName}
-                                    />
-                                )
+                                </PrivateRoute>
                             }
                         />
-                        <Route path="/route-builder" element={<RouteBuilderPage />} />
+                        <Route
+                            path="/route-builder"
+                            element={
+                                <PrivateRoute isLoggedIn={isLoggedIn}>
+                                    <RouteBuilderPage />
+                                </PrivateRoute>
+                            }
+                        />
+
+                        {/* 404 */}
                         <Route path="*" element={<NotFound />} />
                     </Routes>
                 </main>

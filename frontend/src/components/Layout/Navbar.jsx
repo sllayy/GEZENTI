@@ -10,8 +10,15 @@ const Navbar = ({ isLoggedIn, setIsLoggedIn, userName }) => {
 
     // Çıkış yapma fonksiyonu
     const handleLogout = () => {
-        setIsLoggedIn(false); // Uygulama genelindeki giriş durumunu 'false' yap
-        navigate('/');        // Kullanıcıyı ana sayfaya yönlendir
+        // Local storage temizle
+        localStorage.removeItem("jwtToken");
+        localStorage.removeItem("userName");
+
+        // State güncelle
+        setIsLoggedIn(false);
+
+        // Ana sayfaya yönlendir
+        navigate('/');
     };
 
     // Kullanıcı adının ilk harfini alma
