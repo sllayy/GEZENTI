@@ -16,28 +16,6 @@ namespace GeziRotasi.API.Services
         private readonly AppDbContext _db;
         private readonly string _osrmBaseUrl;
 
-        // FE -> DB enum köprüsü
-        private readonly Dictionary<string, PoiCategory> _themeMap = new()
-        {
-            { "Tarih", PoiCategory.Tarih },
-            { "Müze", PoiCategory.Müze },
-            { "Sanat", PoiCategory.Sanat },
-            { "Yemek", PoiCategory.Yemek },
-            { "Alışveriş", PoiCategory.Alışveriş },
-            { "Doğa", PoiCategory.Doğa },
-            { "Eğlence", PoiCategory.Eğlence },
-            { "Eğlenc", PoiCategory.Eğlence },               // yazım hatası
-            { "Eğlence Yerleri", PoiCategory.Eğlence },      // varyasyon
-            { "Müzik", PoiCategory.Müzik },
-            { "Sahil", PoiCategory.Sahil },
-            { "Park", PoiCategory.Park },
-            { "Kültür", PoiCategory.Kültür },
-            { "Karayolu", PoiCategory.Karayolu },
-            { "Kültürel Tesisler", PoiCategory.KültürelTesisler },
-            { "Önemli Noktalar", PoiCategory.OnemliNoktalar },
-            { "Tarihi ve Turistik Tesisler", PoiCategory.TarihiTuristikTesisler }
-        };
-
         public RouteService(HttpClient httpClient, IConfiguration config, ILogger<RouteService> logger, AppDbContext db)
         {
             _httpClient = httpClient;
@@ -49,138 +27,138 @@ namespace GeziRotasi.API.Services
 
         public async Task<RouteResponseDto> GetOptimizedRouteAsync(RouteRequestDto request, CancellationToken ct = default)
         {
-            if (request.Coordinates is null || request.Coordinates.Count < 2)
-                throw new ArgumentException("Rota için en az iki koordinat gereklidir.");
-
-            // 1) Kullanıcı tercihleri
-            var prefs = await _db.UserPreferences.FirstOrDefaultAsync(p => p.UserId == request.UserId, ct);
-
-            if (prefs is not null)
+            try
             {
-                if (!string.IsNullOrWhiteSpace(prefs.PreferredTransportationMode))
-                    request.Mode = prefs.PreferredTransportationMode;
+                if (request.Coordinates is null || request.Coordinates.Count < 2)
+                    throw new ArgumentException("Rota için en az iki koordinat gereklidir.");
 
-                if (prefs.PrioritizeShortestRoute)
-                    request.OptimizeOrder = true;
+                // --- Kullanıcı tercihleri ---
+                var prefs = await _db.UserPreferences.FirstOrDefaultAsync(p => p.UserId == request.UserId, ct);
 
-                if (prefs.MaxWalkDistance > 0 && string.Equals(request.Mode, "foot", StringComparison.OrdinalIgnoreCase))
-                    _logger.LogInformation("Max yürüyüş mesafesi: {MaxWalk}", prefs.MaxWalkDistance);
-
-                var nowHour = DateTime.Now.Hour;
-                if (nowHour < prefs.MinStartTimeHour || nowHour > prefs.MaxEndTimeHour)
-                    throw new InvalidOperationException("Seçilen saat kullanıcı tercihlerine uymuyor.");
-
-                if (prefs.ConsiderTraffic)
-                    _logger.LogInformation("Trafik dikkate alınması istendi (OSRM native desteklemez).");
-            }
-
-            // 2) Tema -> POI filtreleme
-            List<Poi> poisForRoute;
-            if (prefs != null && !string.IsNullOrEmpty(prefs.PreferredThemes))
-            {
-                var selectedThemes = prefs.PreferredThemes.Split(',')
-                                                          .Select(t => t.Trim())
-                                                          .Where(t => !string.IsNullOrEmpty(t))
-                                                          .ToList();
-
-                var mappedCategories = selectedThemes
-                    .Where(t => _themeMap.ContainsKey(t))
-                    .Select(t => _themeMap[t])
-                    .Distinct()
-                    .ToList();
-
-                poisForRoute = mappedCategories.Any()
-                    ? await _db.Pois.Where(p => mappedCategories.Contains(p.Category)).ToListAsync(ct)
-                    : await _db.Pois.ToListAsync(ct);
-            }
-            else
-            {
-                poisForRoute = await _db.Pois.ToListAsync(ct);
-            }
-
-            // 2.1) Süreye göre POI sayısını kısıtla
-            if (request.TotalAvailableMinutes > 0)
-            {
-                const int avgVisitMinutes = 30; // her POI için ortalama süre
-                var maxPois = request.TotalAvailableMinutes / avgVisitMinutes;
-
-                if (poisForRoute.Count > maxPois)
+                if (prefs is not null)
                 {
-                    poisForRoute = poisForRoute.Take(maxPois).ToList();
-                    _logger.LogInformation("Süre kısıtlaması: {MaxPois} POI seçildi (toplam süre: {TotalMinutes} dk).",
-                        maxPois, request.TotalAvailableMinutes);
+                    if (!string.IsNullOrWhiteSpace(prefs.PreferredTransportationMode))
+                        request.Mode = prefs.PreferredTransportationMode;
+
+                    if (prefs.PrioritizeShortestRoute)
+                        request.OptimizeOrder = true;
+
+                    if (prefs.MaxWalkDistance > 0 && request.Mode.Equals("foot", StringComparison.OrdinalIgnoreCase))
+                        _logger.LogInformation("👟 Max yürüyüş mesafesi: {MaxWalk}", prefs.MaxWalkDistance);
+
+                    var nowHour = DateTime.Now.Hour;
+                    if (nowHour < prefs.MinStartTimeHour || nowHour > prefs.MaxEndTimeHour)
+                        throw new InvalidOperationException("Seçilen saat kullanıcı tercihlerine uymuyor.");
+
+                    if (prefs.ConsiderTraffic)
+                        _logger.LogInformation("🚦 Trafik dikkate alınması istendi (OSRM native desteklemez).");
                 }
-            }
 
-            // 2.2) Hard-limit safeguard (URI çok uzun olmasın diye)
-            const int hardLimit = 20;
-            if (poisForRoute.Count > hardLimit)
-            {
-                poisForRoute = poisForRoute.Take(hardLimit).ToList();
-                _logger.LogWarning("Hard limit uygulandı: {HardLimit} POI seçildi.", hardLimit);
-            }
+                // --- POI Query başlangıcı ---
+                var poiQuery = _db.Pois.AsQueryable();
 
-            // 3) Koordinatlar (start -> POIs -> end)
-            var finalCoords = new List<double[]>();
-            var start = request.Coordinates.First();
-            finalCoords.Add(new[] { start[0], start[1] });
+                if (prefs != null && !string.IsNullOrEmpty(prefs.PreferredThemes))
+                {
+                    var selectedThemes = prefs.PreferredThemes.Split(',')
+                                                            .Select(t => t.Trim())
+                                                            .Where(t => !string.IsNullOrEmpty(t))
+                                                            .ToList();
 
-            foreach (var poi in poisForRoute)
-            {
-                if (!(poi.Longitude == start[0] && poi.Latitude == start[1]))
-                    finalCoords.Add(new[] { poi.Longitude, poi.Latitude });
-            }
+                    _logger.LogInformation("🎯 Kullanıcı seçtiği temalar: {Themes}", string.Join(", ", selectedThemes));
 
-            var end = request.Coordinates.Last();
-            if (!(end[0] == start[0] && end[1] == start[1]))
-                finalCoords.Add(new[] { end[0], end[1] });
+                    if (selectedThemes.Any())
+                    {
+                        var categoryMap = new Dictionary<string, List<PoiCategory>>(StringComparer.OrdinalIgnoreCase)
+                    {
+                        { "tarih", new List<PoiCategory> { PoiCategory.Tarih, PoiCategory.Müze, PoiCategory.KültürelTesisler } },
+                        { "yemek", new List<PoiCategory> { PoiCategory.Yemek, PoiCategory.Restoran } },
+                        { "doğa", new List<PoiCategory> { PoiCategory.Doğa, PoiCategory.Park } },
+                        { "eğlence", new List<PoiCategory> { PoiCategory.Eğlence, PoiCategory.Müzik } }
+                    };
 
-            if (finalCoords.Count < 2)
-            {
-                finalCoords.Clear();
+                        var allowedCategories = new List<PoiCategory>();
+
+                        foreach (var theme in selectedThemes)
+                        {
+                            if (categoryMap.TryGetValue(theme.ToLower(), out var mapped))
+                                allowedCategories.AddRange(mapped);
+                            else if (Enum.TryParse<PoiCategory>(theme, true, out var parsed))
+                                allowedCategories.Add(parsed);
+                        }
+
+                        _logger.LogInformation("🎯 AllowedCategories: {Allowed}", string.Join(", ", allowedCategories));
+
+                        poiQuery = poiQuery.Where(p => allowedCategories.Contains(p.Category));
+                    }
+                }
+
+
+                // --- POI + ortalama rating ---
+                var poisForRoute = await poiQuery
+                    .Select(p => new
+                    {
+                        Poi = p,
+                        AvgRating = _db.Reviews.Where(r => r.PoiId == p.Id)
+                                               .Average(r => (double?)r.Rating) ?? 0
+                    })
+                    .ToListAsync(ct);
+
+                // --- Süreye göre kısıtlama (30 dk / POI) ---
+                if (request.TotalAvailableMinutes > 0)
+                {
+                    var maxPois = request.TotalAvailableMinutes / 30;
+                    poisForRoute = poisForRoute.Take(maxPois).ToList();
+                    _logger.LogInformation("⏱ Süre kısıtlaması: {MaxPois} POI seçildi", maxPois);
+                }
+
+                // --- Hard limit ---
+                const int hardLimit = 20;
+                if (poisForRoute.Count > hardLimit)
+                {
+                    poisForRoute = poisForRoute.Take(hardLimit).ToList();
+                    _logger.LogWarning("⚠️ Hard limit uygulandı: {HardLimit} POI seçildi.", hardLimit);
+                }
+
+                // --- Koordinatlar ---
+                var finalCoords = new List<double[]>();
+                var start = request.Coordinates.First();
                 finalCoords.Add(new[] { start[0], start[1] });
+
+                foreach (var poi in poisForRoute)
+                    finalCoords.Add(new[] { poi.Poi.Longitude, poi.Poi.Latitude });
+
+                var end = request.Coordinates.Last();
                 finalCoords.Add(new[] { end[0], end[1] });
+
+                var coordsString = string.Join(";", finalCoords.Select(c =>
+                    $"{c[0].ToString(CultureInfo.InvariantCulture)},{c[1].ToString(CultureInfo.InvariantCulture)}"));
+
+                var url = BuildOsrmUrl(NormalizeMode(request.Mode), coordsString, request);
+                _logger.LogInformation("🌍 OSRM URL: {Url}", url);
+
+                var body = await FetchOsrmAsync(url, ct);
+                var response = ParseOsrm(body, request.OptimizeOrder);
+
+                // --- VisitPois doldur ---
+                response.VisitPois = poisForRoute.Select(x => new PoiDto
+                {
+                    Id = x.Poi.Id,
+                    Name = x.Poi.Name,
+                    Description = x.Poi.Description ?? "",
+                    Latitude = x.Poi.Latitude,
+                    Longitude = x.Poi.Longitude,
+                    Category = x.Poi.Category.ToString(), // ✅ enum → string
+                    AvgRating = x.AvgRating,
+                    IsOpenNow = true,
+                    DistanceMeters = 0
+                }).ToList();
+
+                return response;
             }
-
-            var mode = NormalizeMode(request.Mode);
-            var coordsString = string.Join(";",
-                finalCoords.Select(c => $"{c[0].ToString(CultureInfo.InvariantCulture)},{c[1].ToString(CultureInfo.InvariantCulture)}"));
-
-            var url = BuildOsrmUrl(mode, coordsString, request);
-            _logger.LogInformation("OSRM URL: {Url}", url);
-
-            var body = await FetchOsrmAsync(url, ct);
-            var response = ParseOsrm(body, request.OptimizeOrder);
-            response.PreferencesApplied = prefs is not null;
-            return response;
-        }
-
-        private string BuildOsrmUrl(string mode, string coordsString, RouteRequestDto request)
-        {
-            var geometries = request.GeoJson ? "geojson" : "polyline";
-
-            // Docker OSRM port seçimi
-            var baseUrl = mode switch
+            catch (Exception ex)
             {
-                "driving" => "http://localhost:5002",
-                "foot" => "http://localhost:5003",
-                _ => _osrmBaseUrl
-            };
-
-            if (request.OptimizeOrder)
-            {
-                var roundtrip = request.ReturnToStart ? "true" : "false";
-                var tail = $"overview=full&geometries={geometries}&roundtrip={roundtrip}&source=first";
-                if (!request.ReturnToStart) tail += "&destination=last";
-                return $"{baseUrl}/trip/v1/{mode}/{coordsString}?{tail}";
-            }
-            else
-            {
-                var query = $"overview=full&geometries={geometries}";
-                if (request.Alternatives > 0)
-                    query += $"&alternatives={Math.Min(request.Alternatives, 3)}";
-
-                return $"{baseUrl}/route/v1/{mode}/{coordsString}?{query}";
+                _logger.LogError(ex, "❌ Rota oluşturulurken hata: {@Request}", request);
+                throw;
             }
         }
 
@@ -191,7 +169,7 @@ namespace GeziRotasi.API.Services
 
             if (!resp.IsSuccessStatusCode)
             {
-                _logger.LogWarning("OSRM {Code}. Body: {Body}", (int)resp.StatusCode, Truncate(body, 200));
+                _logger.LogWarning("❌ OSRM {Code}. Body: {Body}", (int)resp.StatusCode, Truncate(body, 200));
                 throw new InvalidOperationException(
                     $"OSRM {(int)resp.StatusCode} {resp.ReasonPhrase}. Body: {Truncate(body, 500)}");
             }
@@ -246,5 +224,33 @@ namespace GeziRotasi.API.Services
 
         private static string Truncate(string s, int max) =>
             s.Length <= max ? s : s[..max] + "...";
+
+        private string BuildOsrmUrl(string mode, string coordsString, RouteRequestDto request)
+        {
+            var geometries = request.GeoJson ? "geojson" : "polyline";
+
+            var baseUrl = mode switch
+            {
+                "driving" => "http://localhost:5002",
+                "foot" => "http://localhost:5003",
+                _ => _osrmBaseUrl
+            };
+
+            if (request.OptimizeOrder)
+            {
+                var roundtrip = request.ReturnToStart ? "true" : "false";
+                var tail = $"overview=full&geometries={geometries}&roundtrip={roundtrip}&source=first";
+                if (!request.ReturnToStart) tail += "&destination=last";
+                return $"{baseUrl}/trip/v1/{mode}/{coordsString}?{tail}";
+            }
+            else
+            {
+                var query = $"overview=full&geometries={geometries}";
+                if (request.Alternatives > 0)
+                    query += $"&alternatives={Math.Min(request.Alternatives, 3)}";
+
+                return $"{baseUrl}/route/v1/{mode}/{coordsString}?{query}";
+            }
+        }
     }
 }

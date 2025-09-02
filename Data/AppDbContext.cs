@@ -17,7 +17,6 @@ namespace GeziRotasi.API.Data
         public DbSet<EmailCode> EmailCodes => Set<EmailCode>();
         public DbSet<PasswordHistory> PasswordHistories => Set<PasswordHistory>();
 
-
         // -------------------
         // POI & ROTA TABLOLARI
         // -------------------

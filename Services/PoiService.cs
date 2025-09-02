@@ -2,15 +2,12 @@
 using GeziRotasi.API.Data;
 using GeziRotasi.API.Dtos;
 using GeziRotasi.API.Models;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.EntityFrameworkCore;
 using NetTopologySuite.Features;
 using NetTopologySuite.Geometries;
 using NetTopologySuite.IO;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Point = NetTopologySuite.Geometries.Point;
@@ -28,19 +25,24 @@ namespace GeziRotasi.API.Services
         }
 
         // --- OKUMA (READ) İŞLEMLERİ ---
-
-        public async Task<List<Poi>> GetAllPoisAsync(string category, string searchTerm, string sortBy, string sortDirection, int pageNumber = 1, int pageSize = 10)
+        public async Task<List<Poi>> GetAllPoisAsync(
+            string? category,
+            string? searchTerm,
+            string? sortBy,
+            string? sortDirection,
+            int pageNumber = 1,
+            int pageSize = 10)
         {
             var query = _context.Pois.AsQueryable();
 
-            if (!string.IsNullOrWhiteSpace(category))
+            // Kategoriye göre filtreleme (string → enum parse)
+            if (!string.IsNullOrWhiteSpace(category) &&
+                Enum.TryParse<PoiCategory>(category, true, out var categoryEnum))
             {
-                if (Enum.TryParse<PoiCategory>(category, true, out var categoryEnum))
-                {
-                    query = query.Where(p => p.Category == categoryEnum);
-                }
+                query = query.Where(p => p.Category == categoryEnum);
             }
 
+            // Arama filtresi
             if (!string.IsNullOrWhiteSpace(searchTerm))
             {
                 query = query.Where(p =>
@@ -49,6 +51,7 @@ namespace GeziRotasi.API.Services
                 );
             }
 
+            // Sıralama
             if (!string.IsNullOrWhiteSpace(sortBy))
             {
                 bool isDescending = sortDirection?.Equals("desc", StringComparison.OrdinalIgnoreCase) ?? false;
@@ -79,7 +82,6 @@ namespace GeziRotasi.API.Services
         }
 
         // --- YAZMA (CREATE, UPDATE, DELETE) İŞLEMLERİ ---
-
         public async Task<Poi> CreatePoiAsync(Poi newPoi)
         {
             _context.Pois.Add(newPoi);
@@ -96,7 +98,7 @@ namespace GeziRotasi.API.Services
                 poiToUpdate.Description = updatedPoi.Description;
                 poiToUpdate.Latitude = updatedPoi.Latitude;
                 poiToUpdate.Longitude = updatedPoi.Longitude;
-                poiToUpdate.Category = updatedPoi.Category;
+                poiToUpdate.Category = updatedPoi.Category; // ✅ enum
                 poiToUpdate.OpeningHours = updatedPoi.OpeningHours;
                 poiToUpdate.Website = updatedPoi.Website;
                 poiToUpdate.PhoneNumber = updatedPoi.PhoneNumber;
@@ -118,7 +120,6 @@ namespace GeziRotasi.API.Services
         }
 
         // --- OSM ENTEGRASYON İŞLEMLERİ ---
-
         public async Task<bool> IsOsmIdExistsAsync(long osmId)
         {
             return await _context.Pois.AnyAsync(p => p.ExternalApiId == osmId.ToString());
@@ -126,14 +127,16 @@ namespace GeziRotasi.API.Services
 
         public async Task<Poi> ImportFromOsmAsync(OsmElement osmElement)
         {
-            Enum.TryParse<PoiCategory>(osmElement.Tags.GetValueOrDefault("amenity", "Genel"), true, out var poiCategory);
+            var amenity = osmElement.Tags.GetValueOrDefault("amenity", "Genel");
+            Enum.TryParse<PoiCategory>(amenity, true, out var poiCategory);
+
             var newPoi = new Poi
             {
                 Name = osmElement.Tags.GetValueOrDefault("name", "İsimsiz Mekan"),
                 Description = "OpenStreetMap üzerinden eklendi.",
                 Latitude = osmElement.Lat,
                 Longitude = osmElement.Lon,
-                Category = poiCategory,
+                Category = poiCategory, // ✅ enum
                 ExternalApiId = osmElement.Id.ToString(),
                 OpeningHours = osmElement.Tags.GetValueOrDefault("opening_hours"),
                 Website = osmElement.Tags.GetValueOrDefault("website"),
@@ -143,7 +146,6 @@ namespace GeziRotasi.API.Services
         }
 
         // --- ÇALIŞMA SAATLERİ İŞLEMLERİ ---
-
         public async Task<List<WorkingHour>> GetWorkingHoursForPoiAsync(int poiId)
         {
             return await _context.WorkingHours
@@ -174,7 +176,6 @@ namespace GeziRotasi.API.Services
         }
 
         // --- GEOJSON DÖNÜŞTÜRME ---
-
         public string ConvertPoisToGeoJson(List<Poi> pois)
         {
             var features = new List<Feature>();
@@ -186,7 +187,7 @@ namespace GeziRotasi.API.Services
                     { "id", poi.Id },
                     { "name", poi.Name },
                     { "description", poi.Description },
-                    { "category", poi.Category.ToString() },
+                    { "category", poi.Category.ToString() }, // ✅ enum → string
                     { "imageUrl", poi.ImageUrl }
                 };
                 features.Add(new Feature(point, attributes));

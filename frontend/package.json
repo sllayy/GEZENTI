@@ -10,6 +10,7 @@
     "@testing-library/jest-dom": "^6.8.0",
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^13.5.0",
+    "axios": "^1.11.0",
     "firebase": "^12.1.0",
     "ol": "^10.6.1",
     "primeicons": "^7.0.0",

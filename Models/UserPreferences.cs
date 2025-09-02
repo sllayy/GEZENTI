@@ -20,11 +20,6 @@ public class UserPreferences
     /// </summary>
     public int UserId { get; set; }
 
-    /// <summary>
-    /// Kullanıcının gezi için ayırdığı bütçe tercihi.
-    /// Frontend'den gelen değere göre (örn: 0, 1, 2) bütçe seviyesini temsil edebilir.
-    /// </summary>
-    public decimal Budget { get; set; }
 
     /// <summary>
     /// Kullanıcının gezi rotası için tercih ettiği kalabalık düzeyi.

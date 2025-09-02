@@ -36,8 +36,8 @@ builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("Jwt"))
 // 3. Database
 // ----------------------
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("GezentiDb")));
-// ✅ Artık DefaultConnection okunuyor (UserSecrets ile eşleşti)
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+//  Artık DefaultConnection okunuyor (UserSecrets ile eşleşti)
 
 // ----------------------
 // 4. Identity
@@ -98,10 +98,10 @@ builder.Services.AddCors(options =>
         // Development ortamında daha esnek CORS ayarları
         if (builder.Environment.IsDevelopment())
         {
-            policy.SetIsOriginAllowed(origin => 
+            policy.SetIsOriginAllowed(origin =>
             {
                 // localhost'tan gelen tüm isteklere izin ver
-                return origin.StartsWith("http://localhost:") || 
+                return origin.StartsWith("http://localhost:") ||
                        origin.StartsWith("https://localhost:") ||
                        origin.StartsWith("http://127.0.0.1:") ||
                        origin.StartsWith("https://127.0.0.1:");
