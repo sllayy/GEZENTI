@@ -1,48 +1,49 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
+// `react-icons/fa` ve `./MainCard` import yolları düzeltildi.
 import { FaCompass } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import MainCard from "./MainCard";
 
-
+// API çağrılarını yönetecek bir servis fonksiyonu oluşturalım
+const getPois = async (sortBy = 'name') => {
+    try {
+        const response = await fetch(`https://localhost:7248/api/pois?sortBy=${sortBy}`); 
+        if (!response.ok) {
+            throw new Error("Veri çekme işlemi başarısız oldu.");
+        }
+        return await response.json();
+    } catch (error) {
+        console.error("API'den veri çekilirken bir hata oluştu:", error);
+        throw error;
+    }
+};
 
 const Main = () => {
     const navigate = useNavigate();
 
-    const destinations = [
-        {
-            image: "/kapadokya.jpg",
-            title: "Kapadokya Balon Turu",
-            location: "Nevşehir, Türkiye",
-            description:
-                "Büyüleyici Kapadokya manzarası eşliğinde unutulmaz bir balon deneyimi yaşayın.",
-            tags: ["Balon", "Manzara", "Gündoğumu"],
-            visitors: 1250,
-            category: "Macera",
-            rating: 4.8,
-        },
-        {
-            image: "/pamukkale.jpg",
-            title: "Pamukkale Travertenleri",
-            location: "Denizli, Türkiye",
-            description:
-                "Doğanın muhteşem eseri beyaz travertenler ve antik Hierapolis şehri.",
-            tags: ["Termal", "Antik Kent", "UNESCO"],
-            visitors: 980,
-            category: "Doğa",
-            rating: 4.7,
-        },
-        {
-            image: "/bogazici.jpg",
-            title: "Boğaziçi Turu",
-            location: "İstanbul, Türkiye",
-            description:
-                "İstanbul Boğazı'nın eşsiz güzelliğini tekne turuyla keşfedin.",
-            tags: ["Tekne Turu", "Tarihi", "Boğaz"],
-            visitors: 2150,
-            category: "Kültür",
-            rating: 4.6,
-        },
-    ];
+    // API'den gelecek olan veriyi tutmak için state oluşturuyoruz.
+    const [destinations, setDestinations] = useState([]);
+
+    // Yükleme (loading) ve hata (error) durumlarını yönetmek için ek state'ler.
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    // Bileşen ilk yüklendiğinde API'ye istek göndermek için useEffect kullanıyoruz.
+    useEffect(() => {
+        const fetchPois = async () => {
+            try {
+                // Popüler destinasyonlar için 'populer' parametresini gönderiyoruz.
+                const data = await getPois("populer"); 
+                setDestinations(data); 
+            } catch (err) {
+                setError(err.message); // Hata durumunu kaydet.
+            } finally {
+                setIsLoading(false); // Yükleme durumunu bitir.
+            }
+        };
+
+        fetchPois();
+    }, []); // Boş bağımlılık dizisi, bu kodun sadece bir kere çalışmasını sağlar.
 
     return (
         <>
@@ -59,13 +60,11 @@ const Main = () => {
                         <span className="text-orange-400"> Rotayı </span>
                         Keşfedin ve Yaratın
                     </h1>
-
                     <p className="text-lg md:text-2xl text-center max-w-3xl">
                         Binlerce <span className="text-orange-400">POI</span> noktasından
                         rotanızı oluşturun, diğer gezginlerle paylaşın ve unutulmaz maceralar
                         yaşayın.
                     </p>
-
                     <button
                         onClick={() => navigate("/poi")}
                         className="mt-12 flex items-center space-x-2 bg-orange-500 hover:bg-orange-600 px-6 py-3 rounded-lg font-semibold text-white shadow-lg transition"
@@ -80,12 +79,19 @@ const Main = () => {
             <div className="max-w-7xl mx-auto px-4 py-10">
                 <h2 className="text-3xl font-bold text-center mb-6">Popüler Destinasyonlar</h2>
                 <p className="text-lg md:text-2xl text-center max-w-3xl mx-auto text-gray-600 mb-8">
-                    Gezginlerimizin en çok tercih ettiği POI noktalarını keşfedin ve rotalarınıza ekleyin
+                    Gezginlerimizin en çok tercih ettiği POI noktalarını keşfedin ve rotalarına ekleyin
                 </p>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    {destinations.map((d, i) => (
-                        <MainCard key={i} {...d} />
-                    ))}
+                    {/* Yükleme, hata veya veri olmadığı durumlar için koşullu renderlama */}
+                    {isLoading && <p>Veriler yükleniyor...</p>}
+                    {error && <p className="text-red-500">Hata: {error}</p>}
+                    {!isLoading && !error && destinations.length > 0 ? (
+                        // Veri varsa, gelen verileri haritala ve MainCard bileşenine gönder.
+                        destinations.map((d) => <MainCard key={d.id} {...d} />)
+                    ) : (
+                        // Veri yoksa veya bir hata oluştuysa kullanıcıya bilgi ver.
+                        !isLoading && !error && <p>Gösterilecek destinasyon bulunamadı.</p>
+                    )}
                 </div>
             </div>
         </>

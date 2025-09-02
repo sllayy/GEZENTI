@@ -36,8 +36,11 @@ builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("Jwt"))
 // 3. Database
 // ----------------------
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseNpgsql(builder.Configuration.GetConnectionString("GezentiDb")));
+<<<<<<< HEAD
 //  Artık DefaultConnection okunuyor (UserSecrets ile eşleşti)
+=======
+>>>>>>> 7031a543 (FEAT: Gerçek veri entegrasyonu ve footer iyileştirmeleri)
 
 // ----------------------
 // 4. Identity
@@ -95,13 +98,16 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
-        // Development ortamında daha esnek CORS ayarları
         if (builder.Environment.IsDevelopment())
         {
             policy.SetIsOriginAllowed(origin =>
             {
+<<<<<<< HEAD
                 // localhost'tan gelen tüm isteklere izin ver
                 return origin.StartsWith("http://localhost:") ||
+=======
+                return origin.StartsWith("http://localhost:") || 
+>>>>>>> 7031a543 (FEAT: Gerçek veri entegrasyonu ve footer iyileştirmeleri)
                        origin.StartsWith("https://localhost:") ||
                        origin.StartsWith("http://127.0.0.1:") ||
                        origin.StartsWith("https://127.0.0.1:");
@@ -112,7 +118,6 @@ builder.Services.AddCors(options =>
         }
         else
         {
-            // Production ortamında sadece belirli origin'lere izin ver
             policy.WithOrigins(
                 "http://localhost:3000",
                 "http://localhost:5173",
@@ -129,22 +134,17 @@ builder.Services.AddCors(options =>
 // ----------------------
 // 7. Custom Services
 // ----------------------
-
-// OSRM ve diğer API çağrıları için HttpClientFactory
 builder.Services.AddHttpClient<IRouteService, RouteService>();
-
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IEmailSender, MailKitEmailSender>();
 builder.Services.AddScoped<ICodeService, CodeService>();
-
 builder.Services.AddHttpClient<OsmService>();
 builder.Services.AddScoped<OsmService>();
 builder.Services.AddScoped<PoiService>();
 builder.Services.AddScoped<ICategoryRepository, InMemoryCategoryRepository>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
-
 builder.Services.AddHttpClient<IRouteService, RouteService>();
-
+builder.Services.AddScoped<IMapRouteService, MapRouteService>();
 
 // 8. Controllers & Swagger
 // ----------------------
@@ -185,10 +185,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseCors("AllowFrontend");    // ✅ önce cors
-app.UseStaticFiles();       // frontend build dosyaları için
+app.UseCors("AllowFrontend");
+app.UseStaticFiles();
 
-// Development ortamında HTTPS yönlendirmesini devre dışı bırak
 if (!app.Environment.IsDevelopment())
 {
     app.UseHttpsRedirection();
@@ -212,5 +211,3 @@ app.Run();
 Log.CloseAndFlush();
 
 public partial class Program { }
-
-

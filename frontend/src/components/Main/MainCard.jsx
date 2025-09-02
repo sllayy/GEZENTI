@@ -3,8 +3,8 @@ import { FaStar, FaUsers, FaMapMarkerAlt } from "react-icons/fa";
 import Modal from "./Modal";
 
 const MainCard = ({
-    image,
-    title,
+    imageUrl,
+    name,
     location,
     description,
     tags,
@@ -13,7 +13,10 @@ const MainCard = ({
     rating,
     comments,
 }) => {
-    // Yorum ve derecelendirmelerin tek bir state'te tutulması için yeni yapı
+    // Varsayılan resim yolunu belirle
+    const defaultImage = "/anasayfa.png";
+
+    // API'den gelen yorumları (comments) state'e aktar
     const [allSubmissions, setAllSubmissions] = useState(
         (comments || []).map(comment => ({ type: 'comment', text: comment }))
     );
@@ -22,9 +25,7 @@ const MainCard = ({
     const openModal = () => setIsModalOpen(true);
     const closeModal = () => setIsModalOpen(false);
 
-    // YENİ: Tek bir fonksiyonla tüm gönderimi yönetiyoruz
     const handleSubmission = (submission) => {
-        // Gönderimi state'e eklemeden önce gerekli kontrolleri yapıyoruz
         if (submission.comment.length > 0) {
             setAllSubmissions(prevSubmissions => [
                 { type: 'full', text: submission.comment, rating: submission.rating, emoji: submission.emoji },
@@ -40,24 +41,31 @@ const MainCard = ({
     
     return (
         <div className="bg-white rounded-lg shadow-md overflow-hidden relative mb-20">
-            <img src={image} alt={title} className="w-full h-48 object-cover" />
+            <img 
+                src={imageUrl || defaultImage} 
+                alt={name || "POI Resmi"} 
+                className="w-full h-48 object-cover" 
+            />
+            
             <div className="absolute top-2 left-2 bg-gray-900 text-white text-xs px-2 py-1 rounded flex items-center space-x-1">
                 <FaStar className="text-yellow-400" />
                 <span>{rating}</span>
             </div>
+            
             <div className="absolute top-2 right-2 bg-gray-200 text-gray-700 text-xs px-2 py-1 rounded">
                 {category}
             </div>
 
             <div className="p-4">
-                <h3 className="font-bold text-lg">{title}</h3>
+                <h3 className="font-bold text-lg">{name}</h3>
                 <p className="text-sm text-gray-500 flex items-center">
                     <FaMapMarkerAlt className="mr-1" /> {location}
                 </p>
                 <p className="text-sm text-gray-600 mt-2">{description}</p>
-
+                
                 <div className="flex flex-wrap gap-2 mt-3">
-                    {tags.map((tag, index) => (
+                    {/* Tags prop'u mevcutsa döngüye sok */}
+                    {tags?.map((tag, index) => (
                         <span
                             key={index}
                             className="bg-gray-100 text-gray-700 px-2 py-1 text-xs rounded-full"
@@ -86,16 +94,14 @@ const MainCard = ({
                 </div>
             </div>
 
-            {/* Modal */}
             <Modal 
                 isOpen={isModalOpen} 
                 onClose={closeModal}
                 onRateSubmit={handleSubmission} 
             >
-                <h2 className="text-2xl font-bold mb-2">{title}</h2>
+                <h2 className="text-2xl font-bold mb-2">{name}</h2>
                 <p className="text-gray-600 mb-4">{description}</p>
-
-                {/* Yorumlar */}
+                
                 <h3 className="font-semibold mb-2">Yorumlar:</h3>
                 <div className="max-h-64 overflow-y-auto mb-4">
                     {allSubmissions.length > 0 ? (
@@ -104,7 +110,6 @@ const MainCard = ({
                                 key={i}
                                 className="text-sm text-gray-700 mb-2 border-b pb-1"
                             >
-                                {/* Türüne göre içeriği render ediyoruz */}
                                 {submission.type === 'full' ? 
                                     `Değerlendirme: ${submission.rating} yıldız ${submission.emoji} - ${submission.text}` :
                                     submission.type === 'ratingOnly' ?

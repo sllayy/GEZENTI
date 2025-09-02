@@ -19,6 +19,7 @@ namespace GeziRotasi.API.Models
         
         // Bu değerlendirme hangi ROTA için yapıldı?
         public int RouteId { get; set; }
+        public Route Route { get; set; } = null!;
 
         // Bu değerlendirmeyi hangi kullanıcı yaptı?
         public int UserId { get; set; }

@@ -28,6 +28,7 @@ namespace GeziRotasi.API.Data
         // PUANLAMA & KULLANICI TERCİHLERİ
         // -------------------
         public DbSet<Review> Reviews { get; set; }
+        public DbSet<Models.Route> Routes { get; set; }
         public DbSet<RouteFeedback> RouteFeedbacks { get; set; }
         public DbSet<UserPreferences> UserPreferences { get; set; }
 

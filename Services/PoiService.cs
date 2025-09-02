@@ -33,7 +33,9 @@ namespace GeziRotasi.API.Services
             int pageNumber = 1,
             int pageSize = 10)
         {
-            var query = _context.Pois.AsQueryable();
+            var query = _context.Pois
+                .Include(p => p.Reviews) // Yorumları da dahil et
+                .AsQueryable();
 
             // Kategoriye göre filtreleme (string → enum parse)
             if (!string.IsNullOrWhiteSpace(category) &&
@@ -55,13 +57,23 @@ namespace GeziRotasi.API.Services
             if (!string.IsNullOrWhiteSpace(sortBy))
             {
                 bool isDescending = sortDirection?.Equals("desc", StringComparison.OrdinalIgnoreCase) ?? false;
-                if (sortBy.Equals("name", StringComparison.OrdinalIgnoreCase))
+                
+                // Popülerlik sıralaması için eklenen kısım
+                switch (sortBy.ToLower())
                 {
-                    query = isDescending ? query.OrderByDescending(p => p.Name) : query.OrderBy(p => p.Name);
-                }
-                else if (sortBy.Equals("category", StringComparison.OrdinalIgnoreCase))
-                {
-                    query = isDescending ? query.OrderByDescending(p => p.Category) : query.OrderBy(p => p.Category);
+                    case "name":
+                        query = isDescending ? query.OrderByDescending(p => p.Name) : query.OrderBy(p => p.Name);
+                        break;
+                    case "category":
+                        query = isDescending ? query.OrderByDescending(p => p.Category) : query.OrderBy(p => p.Category);
+                        break;
+                    case "populer":
+                        // Yorum sayısına göre sıralama yapıyoruz.
+                        query = isDescending ? query.OrderByDescending(p => p.Reviews.Count) : query.OrderBy(p => p.Reviews.Count);
+                        break;
+                    default:
+                        query = query.OrderBy(p => p.Name);
+                        break;
                 }
             }
             else
@@ -117,6 +129,15 @@ namespace GeziRotasi.API.Services
                 _context.Pois.Remove(poiToDelete);
                 await _context.SaveChangesAsync();
             }
+            
+            // Eğer POI silinirse, ilgili çalışma saatlerini ve özel gün saatlerini de sil
+            var workingHours = await _context.WorkingHours.Where(wh => wh.PoiId == id).ToListAsync();
+            _context.WorkingHours.RemoveRange(workingHours);
+
+            var specialDayHours = await _context.SpecialDayHours.Where(sdh => sdh.PoiId == id).ToListAsync();
+            _context.SpecialDayHours.RemoveRange(specialDayHours);
+
+            await _context.SaveChangesAsync();
         }
 
         // --- OSM ENTEGRASYON İŞLEMLERİ ---

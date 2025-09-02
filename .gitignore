@@ -89,3 +89,7 @@ obj/
 osrm-data/
 osm/
 
+bin/
+obj/
+.history/
+

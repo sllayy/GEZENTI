@@ -3,11 +3,12 @@ import axios from 'axios';
 import { getApiUrl } from '../config/environment';
 
 const api = axios.create({
-  baseURL: getApiUrl(),
-  headers: {
-    'Content-Type': 'application/json',
-  },
-  withCredentials: false, // cookie gönderilmesin
+    baseURL: getApiUrl(),
+    headers: {
+        'Content-Type': 'application/json',
+    },
+    timeout: 10000,
+    withCredentials: false,  
 });
 
 // JWT token interceptor
