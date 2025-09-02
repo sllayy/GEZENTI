@@ -6,14 +6,6 @@
 ## has more thorough IDE-specific entries.
 ##
 ## Get latest from https://github.com/github/gitignore/blob/main/Dotnet.gitignore
-# Build output (silinmeli)
-bin/
-obj/
-*.dll
-*.pdb
-
-# Frontend build
-frontend/build/
 
 # Build results
 [Dd]ebug/
@@ -91,4 +83,4 @@ osm/
 
 bin/
 obj/
-.history/
+
