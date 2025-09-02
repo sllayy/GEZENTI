@@ -340,6 +340,32 @@ namespace GeziRotasi.API.Migrations
                     b.ToTable("SpecialDayHours");
                 });
 
+            modelBuilder.Entity("GeziRotasi.API.Models.TravelRoute", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<double>("AverageRating")
+                        .HasColumnType("double precision");
+
+                    b.Property<string>("Category")
+                        .HasColumnType("text");
+
+                    b.Property<double>("DistanceKm")
+                        .HasColumnType("double precision");
+
+                    b.Property<string>("Duration")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id")
+                        .HasName("PK_TravelRoutes");
+
+                    b.ToTable("TravelRoutes", (string)null);
+                });
+
             modelBuilder.Entity("GeziRotasi.API.Models.WorkingHour", b =>
                 {
                     b.Property<int>("Id")

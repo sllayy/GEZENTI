@@ -23,11 +23,13 @@ const MapComponentPage = () => {
   const [startPoint, setStartPoint] = useState(null);
   const [endPoint, setEndPoint] = useState(null);
 
-  const [pois, setPois] = useState([]);
-  const [filteredPois, setFilteredPois] = useState([]); // ✅ filtreli liste
-  const [searchTerm, setSearchTerm] = useState(""); // ✅ arama çubuğu
+  const [pois, setPois] = useState([]); // sağdaki liste
+  const [filteredPois, setFilteredPois] = useState([]);
+  const [selectedPoisForRoute, setSelectedPoisForRoute] = useState([]); // rota için seçilenler
+  const [searchTerm, setSearchTerm] = useState("");
   const [selectedPoi, setSelectedPoi] = useState(null);
   const [routeGeometry, setRouteGeometry] = useState(null);
+  const [visibleCount, setVisibleCount] = useState(10); // ilk 10 POI
 
   const markerSource = useRef(new VectorSource()).current;
   const routeSource = useRef(new VectorSource()).current;
@@ -56,11 +58,12 @@ const MapComponentPage = () => {
     }
   }, []);
 
-  // Marker & POI çizimleri
+  // Marker çizimleri
   useEffect(() => {
     if (map) {
       markerSource.clear();
 
+      // Başlangıç noktası
       if (startPoint) {
         const f = new Feature({
           geometry: new Point(fromLonLat(startPoint.coords)),
@@ -76,6 +79,7 @@ const MapComponentPage = () => {
         markerSource.addFeature(f);
       }
 
+      // Bitiş noktası
       if (endPoint) {
         const f = new Feature({
           geometry: new Point(fromLonLat(endPoint.coords)),
@@ -91,11 +95,12 @@ const MapComponentPage = () => {
         markerSource.addFeature(f);
       }
 
-      pois.forEach((poi, index) => {
+      // Kullanıcı + ile eklediği POI'ler
+      selectedPoisForRoute.forEach((poi) => {
         const poiFeature = new Feature({
           geometry: new Point(fromLonLat([poi.longitude, poi.latitude])),
         });
-        poiFeature.setId(poi.uniqueId || `${poi.id}-${index}`); // ✅ unique ID
+        poiFeature.setId(poi.uniqueId);
         poiFeature.setStyle(
           new Style({
             image: new Icon({
@@ -107,27 +112,31 @@ const MapComponentPage = () => {
         markerSource.addFeature(poiFeature);
       });
     }
-  }, [map, startPoint, endPoint, pois]);
+  }, [map, startPoint, endPoint, selectedPoisForRoute]);
 
   // POI ve rota fetch
   const fetchPoisOrRoute = async (start, end = null) => {
     try {
-      const body = { mode: "driving", coordinates: [start] };
-      if (end) body.coordinates.push(end);
+      const body = {
+        mode: "driving",
+        coordinates: [start, ...(end ? [end] : [])],
+        pois: selectedPoisForRoute.map((p) => [p.longitude, p.latitude]), // rota içine dahil et
+      };
 
       const data = await routeAPI.getRouteWithPois(body);
 
       const poisFromDb = (data.visitPois || []).map((p) => ({
         ...p,
-        uniqueId: `db-${p.id}`,
+        uniqueId: `db-${p.id}-${crypto.randomUUID()}`,
       }));
       setPois(poisFromDb);
-      setFilteredPois(poisFromDb); // ✅ filtreyi güncelle
+      setFilteredPois(poisFromDb);
       setRouteGeometry(data.geometry);
+      setVisibleCount(10);
 
       routeSource.clear();
 
-      if (end && data.geometry?.coordinates) {
+      if (data.geometry?.coordinates) {
         const coords = data.geometry.coordinates.map((c) =>
           fromLonLat([c[0], c[1]])
         );
@@ -144,8 +153,8 @@ const MapComponentPage = () => {
             2000
           );
           if (nearby?.elements) {
-            const nearbyPois = nearby.elements.map((el, idx) => ({
-              uniqueId: `osm-${el.id}-${idx}`, // ✅ index ekle
+            const nearbyPois = nearby.elements.map((el) => ({
+              uniqueId: `osm-${el.id}-${crypto.randomUUID()}`,
               id: el.id,
               name: el.tags?.name || "İsimsiz Mekan",
               latitude: el.lat,
@@ -168,7 +177,7 @@ const MapComponentPage = () => {
   // POI detayı getir
   const handlePoiClick = async (poi) => {
     if (poi.uniqueId.startsWith("osm-")) {
-      setSelectedPoi(poi); // OSM için backend çağrısı yok
+      setSelectedPoi(poi);
       return;
     }
     try {
@@ -191,6 +200,7 @@ const MapComponentPage = () => {
         )
       );
     }
+    setVisibleCount(10);
   }, [searchTerm, pois]);
 
   // İlk açılış → konum al
@@ -225,7 +235,7 @@ const MapComponentPage = () => {
       <div className="text-center px-6 md:px-16 pt-8">
         <h2 className="text-4xl font-extrabold text-gray-800">İnteraktif Harita</h2>
         <p className="text-lg text-gray-600 mt-2">
-          Konumunu seç, yakındaki POI’leri keşfet. Rota oluşturduğunda popüler POI’ler listelenecek.
+          Konumunu seç, yakındaki POI’leri keşfet. Rota oluşturduğunda seçtiğin POI’ler listelenecek.
         </p>
       </div>
 
@@ -269,9 +279,8 @@ const MapComponentPage = () => {
 
           {/* Sağdaki POI Listesi */}
           <div className="flex-1 bg-white p-6 rounded-xl shadow-md border overflow-y-auto">
-            <h3 className="text-2xl font-semibold mb-4">Yakındaki POI’lar</h3>
+            <h3 className="text-2xl font-semibold mb-4">POI Listesi</h3>
 
-            {/* ✅ Arama Çubuğu */}
             <input
               type="text"
               placeholder="POI ara..."
@@ -281,9 +290,9 @@ const MapComponentPage = () => {
             />
 
             <ul className="space-y-3">
-              {filteredPois.map((poi, idx) => (
+              {filteredPois.slice(0, visibleCount).map((poi) => (
                 <li
-                  key={poi.uniqueId || `${poi.id}-${idx}`}
+                  key={poi.uniqueId}
                   className="flex justify-between items-center text-gray-700 border-b pb-2 cursor-pointer"
                   onClick={() => handlePoiClick(poi)}
                 >
@@ -293,15 +302,31 @@ const MapComponentPage = () => {
                       {poi.category} • ⭐ {poi.avgRating?.toFixed(1)}
                     </span>
                   </div>
-                  <button className="text-gray-500 hover:text-blue-600">
+                  <button
+                    className="text-gray-500 hover:text-blue-600"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedPoisForRoute((prev) => [...prev, poi]);
+                    }}
+                  >
                     <FaPlus />
                   </button>
                 </li>
               ))}
+
               {filteredPois.length === 0 && (
                 <p className="text-gray-400 text-sm">Sonuç bulunamadı.</p>
               )}
             </ul>
+
+            {visibleCount < filteredPois.length && (
+              <button
+                onClick={() => setVisibleCount((prev) => prev + 5)}
+                className="mt-4 w-full py-2 text-blue-600 border rounded-lg hover:bg-blue-50"
+              >
+                Daha Fazla Göster
+              </button>
+            )}
 
             {selectedPoi && (
               <div className="mt-6 p-4 border rounded-lg bg-gray-50">

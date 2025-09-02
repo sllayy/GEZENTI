@@ -5,6 +5,7 @@ using GeziRotasi.API.Data;
 using GeziRotasi.API.Dtos;
 using GeziRotasi.API.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
 
 namespace GeziRotasi.API.Services
 {
@@ -69,12 +70,12 @@ namespace GeziRotasi.API.Services
                     if (selectedThemes.Any())
                     {
                         var categoryMap = new Dictionary<string, List<PoiCategory>>(StringComparer.OrdinalIgnoreCase)
-                    {
-                        { "tarih", new List<PoiCategory> { PoiCategory.Tarih, PoiCategory.Müze, PoiCategory.KültürelTesisler } },
-                        { "yemek", new List<PoiCategory> { PoiCategory.Yemek, PoiCategory.Restoran } },
-                        { "doğa", new List<PoiCategory> { PoiCategory.Doğa, PoiCategory.Park } },
-                        { "eğlence", new List<PoiCategory> { PoiCategory.Eğlence, PoiCategory.Müzik } }
-                    };
+                        {
+                            { "tarih", new List<PoiCategory> { PoiCategory.Tarih, PoiCategory.Müze, PoiCategory.KültürelTesisler } },
+                            { "yemek", new List<PoiCategory> { PoiCategory.Yemek, PoiCategory.Restoran } },
+                            { "doğa", new List<PoiCategory> { PoiCategory.Doğa, PoiCategory.Park } },
+                            { "eğlence", new List<PoiCategory> { PoiCategory.Eğlence, PoiCategory.Müzik } }
+                        };
 
                         var allowedCategories = new List<PoiCategory>();
 
@@ -91,7 +92,6 @@ namespace GeziRotasi.API.Services
                         poiQuery = poiQuery.Where(p => allowedCategories.Contains(p.Category));
                     }
                 }
-
 
                 // --- POI + ortalama rating ---
                 var poisForRoute = await poiQuery
@@ -147,7 +147,7 @@ namespace GeziRotasi.API.Services
                     Description = x.Poi.Description ?? "",
                     Latitude = x.Poi.Latitude,
                     Longitude = x.Poi.Longitude,
-                    Category = x.Poi.Category.ToString(), // ✅ enum → string
+                    Category = x.Poi.Category.ToString(),
                     AvgRating = x.AvgRating,
                     IsOpenNow = true,
                     DistanceMeters = 0
@@ -158,6 +158,35 @@ namespace GeziRotasi.API.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "❌ Rota oluşturulurken hata: {@Request}", request);
+                throw;
+            }
+        }
+
+        // --- YENİ EKLENEN METOT ---
+        public async Task<IEnumerable<PastRouteDto>> GetRoutesByUserIdAsync(int userId, CancellationToken ct = default)
+        {
+            try
+            {
+                var routes = await _db.Routes
+                    .AsNoTracking()
+                    .Where(r => r.UserId == userId)
+                    .OrderByDescending(r => r.CreatedAt)
+                    .Select(r => new PastRouteDto
+                    {
+                        Id = r.Id,
+                        StartLocation = r.StartLocation,
+                        EndLocation = r.EndLocation,
+                        Distance = r.Distance,
+                        Duration = r.Duration,
+                        CreatedAt = r.CreatedAt
+                    })
+                    .ToListAsync(ct);
+
+                return routes;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Kullanıcı ID {UserId} için geçmiş rotalar getirilirken hata oluştu.", userId);
                 throw;
             }
         }

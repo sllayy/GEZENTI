@@ -30,132 +30,127 @@ import PrivateRoute from "./components/Auth/PrivateRoute";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage.jsx";
 
 function App() {
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
-    const [userName, setUserName] = useState("");
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userName, setUserName] = useState("");
 
-    // Sayfa yüklendiğinde token kontrolü
-    useEffect(() => {
-        const token = localStorage.getItem("jwtToken");
-        if (token) {
-            setIsLoggedIn(true);
+  // Sayfa yüklendiğinde token kontrolü
+  useEffect(() => {
+    const token = localStorage.getItem("jwtToken");
+    if (token) {
+      setIsLoggedIn(true);
 
-            // Token varsa kullanıcı adını da localStorage'dan al
-            const savedUserName = localStorage.getItem("userName");
-            if (savedUserName) {
-                setUserName(savedUserName);
-            }
-        }
-    }, []);
+      // Token varsa kullanıcı adını da localStorage'dan al
+      const savedUserName = localStorage.getItem("userName");
+      if (savedUserName) {
+        setUserName(savedUserName);
+      }
+    }
+  }, []);
 
-    return (
-        <Router>
-            <div className="flex flex-col min-h-screen">
-                {/* Navbar'a userName'i de gönderdik */}
-                <Navbar
-                    isLoggedIn={isLoggedIn}
-                    setIsLoggedIn={setIsLoggedIn}
-                    userName={userName}
+  return (
+    <Router>
+      <div className="flex flex-col min-h-screen">
+        {/* Navbar'a userName'i de gönderdik */}
+        <Navbar
+          isLoggedIn={isLoggedIn}
+          setIsLoggedIn={setIsLoggedIn}
+          userName={userName}
+        />
+
+        <main className="flex-grow">
+          <Routes>
+            {/* Ana sayfa herkese açık */}
+            <Route
+              path="/"
+              element={
+                <div>
+                  <Main />
+                  <Footer />
+                </div>
+              }
+            />
+
+            {/* Public Auth Sayfaları */}
+            <Route
+              path="/login"
+              element={
+                <LoginPage
+                  setIsLoggedIn={setIsLoggedIn}
+                  setUserName={setUserName}
                 />
+              }
+            />
+            <Route
+              path="/register"
+              element={
+                <RegisterPage
+                  setIsLoggedIn={setIsLoggedIn}
+                  setUserName={setUserName}
+                />
+              }
+            />
+            <Route
+              path="/confirm-email"
+              element={
+                <EmailConfirmationPage
+                  setIsLoggedIn={setIsLoggedIn}
+                  setUserName={setUserName}
+                />
+              }
+            />
 
-                <main className="flex-grow">
-                    <Routes>
-                        {/* Ana sayfa herkese açık */}
-                        <Route
-                            path="/"
-                            element={
-                                <div>
-                                    <Main />
-                                    <Footer />
-                                </div>
-                            }
-                        />
+            {/* Private Sayfalar */}
+            <Route
+              path="/routes"
+              element={
+                <PrivateRoute isLoggedIn={isLoggedIn}>
+                  <RoutesPage />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/poi"
+              element={
+                <PrivateRoute isLoggedIn={isLoggedIn}>
+                  <DiscoverPoi />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/map"
+              element={
+                <PrivateRoute isLoggedIn={isLoggedIn}>
+                  <MapComponent />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/profile"
+              element={
+                <PrivateRoute isLoggedIn={isLoggedIn}>
+                  <ProfilePage />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/route-builder"
+              element={
+                <PrivateRoute isLoggedIn={isLoggedIn}>
+                  <RouteBuilderPage />
+                </PrivateRoute>
+              }
+            />
 
-                        {/* Public Auth Sayfaları */}
-                        <Route
-                            path="/login"
-                            element={
-                                <LoginPage
-                                    setIsLoggedIn={setIsLoggedIn}
-                                    setUserName={setUserName}
-                                />
-                            }
-                        />
-                        <Route
-                            path="/register"
-                            element={
-                                <RegisterPage
-                                    setIsLoggedIn={setIsLoggedIn}
-                                    setUserName={setUserName}
-                                />
-                            }
-                        />
-                        <Route
-                            path="/confirm-email"
-                            element={
-                                <EmailConfirmationPage
-                                    setIsLoggedIn={setIsLoggedIn}
-                                    setUserName={setUserName}
-                                />
-                            }
-                        />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </main>
 
-                        {/* Private Sayfalar */}
-                        <Route
-                            path="/routes"
-                            element={
-                                <PrivateRoute isLoggedIn={isLoggedIn}>
-                                    <RoutesPage />
-                                </PrivateRoute>
-                            }
-                        />
-                        <Route
-                            path="/poi"
-                            element={
-                                <PrivateRoute isLoggedIn={isLoggedIn}>
-                                    <DiscoverPoi />
-                                </PrivateRoute>
-                            }
-                        />
-                        <Route
-                            path="/map"
-                            element={
-                                <PrivateRoute isLoggedIn={isLoggedIn}>
-                                    <MapComponent />
-                                </PrivateRoute>
-                            }
-                        />
-                        <Route
-                            path="/profile"
-                            element={
-                                <PrivateRoute isLoggedIn={isLoggedIn}>
-                                    <ProfilePage />
-                                </PrivateRoute>
-                            }
-                        />
-                        <Route
-                            path="/route-builder"
-                            element={
-                                <PrivateRoute isLoggedIn={isLoggedIn}>
-                                    <RouteBuilderPage />
-                                </PrivateRoute>
-                            }
-                        />
-
-                        <Route
-                            path="/forgot-password"
-                            element={<ForgotPasswordPage />}
-                        />
-
-                        {/* 404 */}
-                        <Route path="*" element={<NotFound />} />
-                    </Routes>
-                </main>
-
-                {/* Development Port Configuration Component */}
-                <PortConfig />
-            </div>
-        </Router>
-    );
+        {/* Development Port Configuration Component */}
+        <PortConfig />
+      </div>
+    </Router>
+  );
 }
 
 export default App;

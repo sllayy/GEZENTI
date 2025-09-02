@@ -26,13 +26,14 @@ namespace GeziRotasi.API.Services // Namespace'i kendi projenle eşleşmiyorsa g
             var overpassQuery = $@"
                 [out:json][timeout:25];
                 (
-                  node[""amenity""=""{placeType}""](around:{radius},{latStr},{lonStr});
-                  way[""amenity""=""{placeType}""](around:{radius},{latStr},{lonStr});
+                node[""amenity""=""{placeType}""](around:{radius},{latitude},{longitude});
+                way[""amenity""=""{placeType}""](around:{radius},{latitude},{longitude});
                 );
                 out body;
                 >;
                 out skel qt;
             ";
+
 
             var client = _httpClientFactory.CreateClient();
             var overpassApiUrl = "https://overpass-api.de/api/interpreter";

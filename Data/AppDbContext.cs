@@ -31,6 +31,7 @@ namespace GeziRotasi.API.Data
         public DbSet<Models.Route> Routes { get; set; }
         public DbSet<RouteFeedback> RouteFeedbacks { get; set; }
         public DbSet<UserPreferences> UserPreferences { get; set; }
+        public DbSet<TravelRoute> TravelRoutes { get; set; }
 
         // -------------------
         // MODEL YAPILANDIRMA
@@ -67,6 +68,13 @@ namespace GeziRotasi.API.Data
             modelBuilder.Entity<Poi>()
                 .Property(p => p.Category)
                 .HasConversion<string>();
+
+            // ---- TravelRoute PK Fix ----
+            modelBuilder.Entity<TravelRoute>(e =>
+            {
+                e.ToTable("TravelRoutes");
+                e.HasKey(x => x.Id).HasName("PK_TravelRoutes"); // Özel PK adı
+            });
         }
 
         public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)

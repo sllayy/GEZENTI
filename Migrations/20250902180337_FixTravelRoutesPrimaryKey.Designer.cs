@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace GeziRotasi.API.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250902125342_RenameRoutesToTravelRoutes")]
-    partial class RenameRoutesToTravelRoutes
+    [Migration("20250902180337_FixTravelRoutesPrimaryKey")]
+    partial class FixTravelRoutesPrimaryKey
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -248,6 +248,40 @@ namespace GeziRotasi.API.Migrations
                     b.ToTable("Reviews");
                 });
 
+            modelBuilder.Entity("GeziRotasi.API.Models.Route", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<double>("Distance")
+                        .HasColumnType("double precision");
+
+                    b.Property<double>("Duration")
+                        .HasColumnType("double precision");
+
+                    b.Property<string>("EndLocation")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Geometry")
+                        .HasColumnType("text");
+
+                    b.Property<string>("StartLocation")
+                        .HasColumnType("text");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Routes");
+                });
+
             modelBuilder.Entity("GeziRotasi.API.Models.RouteFeedback", b =>
                 {
                     b.Property<int>("Id")
@@ -272,6 +306,8 @@ namespace GeziRotasi.API.Migrations
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("RouteId");
 
                     b.ToTable("RouteFeedbacks");
                 });
@@ -327,9 +363,10 @@ namespace GeziRotasi.API.Migrations
                     b.Property<string>("Duration")
                         .HasColumnType("text");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("PK_TravelRoutes");
 
-                    b.ToTable("Routes");
+                    b.ToTable("TravelRoutes", (string)null);
                 });
 
             modelBuilder.Entity("GeziRotasi.API.Models.WorkingHour", b =>
@@ -502,9 +539,6 @@ namespace GeziRotasi.API.Migrations
                     b.Property<bool>("AccessibilityFriendly")
                         .HasColumnType("boolean");
 
-                    b.Property<decimal>("Budget")
-                        .HasColumnType("numeric");
-
                     b.Property<bool>("ConsiderTraffic")
                         .HasColumnType("boolean");
 
@@ -569,6 +603,17 @@ namespace GeziRotasi.API.Migrations
                         .HasForeignKey("PoiId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("GeziRotasi.API.Models.RouteFeedback", b =>
+                {
+                    b.HasOne("GeziRotasi.API.Models.Route", "Route")
+                        .WithMany("Feedbacks")
+                        .HasForeignKey("RouteId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Route");
                 });
 
             modelBuilder.Entity("GeziRotasi.API.Models.SpecialDayHour", b =>
@@ -651,6 +696,11 @@ namespace GeziRotasi.API.Migrations
                     b.Navigation("SpecialDayHours");
 
                     b.Navigation("WorkingHours");
+                });
+
+            modelBuilder.Entity("GeziRotasi.API.Models.Route", b =>
+                {
+                    b.Navigation("Feedbacks");
                 });
 #pragma warning restore 612, 618
         }

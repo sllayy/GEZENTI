@@ -6,7 +6,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace GeziRotasi.API.Migrations
 {
     /// <inheritdoc />
-    public partial class AddTravelRouteTable : Migration
+    public partial class FixTravelRoutesPrimaryKey : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
