@@ -37,10 +37,6 @@ builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("Jwt"))
 // ----------------------
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("GezentiDb")));
-<<<<<<< HEAD
-//  Artık DefaultConnection okunuyor (UserSecrets ile eşleşti)
-=======
->>>>>>> 7031a543 (FEAT: Gerçek veri entegrasyonu ve footer iyileştirmeleri)
 
 // ----------------------
 // 4. Identity
@@ -102,12 +98,8 @@ builder.Services.AddCors(options =>
         {
             policy.SetIsOriginAllowed(origin =>
             {
-<<<<<<< HEAD
                 // localhost'tan gelen tüm isteklere izin ver
                 return origin.StartsWith("http://localhost:") ||
-=======
-                return origin.StartsWith("http://localhost:") || 
->>>>>>> 7031a543 (FEAT: Gerçek veri entegrasyonu ve footer iyileştirmeleri)
                        origin.StartsWith("https://localhost:") ||
                        origin.StartsWith("http://127.0.0.1:") ||
                        origin.StartsWith("https://127.0.0.1:");
