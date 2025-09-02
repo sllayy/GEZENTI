@@ -31,7 +31,6 @@ namespace GeziRotasi.API.Controllers
         {
             var prefs = new UserPreferences
             {
-                UserId = dto.UserId,
                 CrowdednessPreference = dto.CrowdednessPreference,
                 MaxWalkDistance = dto.MaxWalkDistance,
                 PreferredThemes = string.Join(",", dto.PreferredThemes),

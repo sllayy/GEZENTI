@@ -36,7 +36,7 @@ builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("Jwt"))
 // 3. Database
 // ----------------------
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("GezentiDb")));
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // ----------------------
 // 4. Identity
@@ -58,14 +58,14 @@ var jwt = builder.Configuration.GetSection("Jwt").Get<JwtSettings>()!;
 var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwt.Key));
 
 var fbCredPath = builder.Configuration["Firebase:CredentialFile"];
-if (string.IsNullOrEmpty(fbCredPath) || !File.Exists(fbCredPath))
+if (!string.IsNullOrEmpty(fbCredPath) && File.Exists(fbCredPath))
 {
-    throw new FileNotFoundException("Firebase credential dosyası bulunamadı: " + fbCredPath);
+    FirebaseApp.Create(new AppOptions
+    {
+        Credential = GoogleCredential.FromFile(fbCredPath)
+    });
 }
-FirebaseApp.Create(new AppOptions
-{
-    Credential = GoogleCredential.FromFile(fbCredPath)
-});
+
 builder.Services.AddHostedService<ExpiredEmailCodeCleanupService>();
 
 builder.Services.AddAuthentication(opt =>
@@ -97,13 +97,11 @@ builder.Services.AddCors(options =>
         if (builder.Environment.IsDevelopment())
         {
             policy.SetIsOriginAllowed(origin =>
-            {
-                // localhost'tan gelen tüm isteklere izin ver
-                return origin.StartsWith("http://localhost:") ||
-                       origin.StartsWith("https://localhost:") ||
-                       origin.StartsWith("http://127.0.0.1:") ||
-                       origin.StartsWith("https://127.0.0.1:");
-            })
+                origin.StartsWith("http://localhost:") ||
+                origin.StartsWith("https://localhost:") ||
+                origin.StartsWith("http://127.0.0.1:") ||
+                origin.StartsWith("https://127.0.0.1:")
+            )
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials();
@@ -135,9 +133,10 @@ builder.Services.AddScoped<OsmService>();
 builder.Services.AddScoped<PoiService>();
 builder.Services.AddScoped<ICategoryRepository, InMemoryCategoryRepository>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
-builder.Services.AddHttpClient<IRouteService, RouteService>();
 builder.Services.AddScoped<IMapRouteService, MapRouteService>();
+builder.Services.AddScoped<UserPreferencesService>();
 
+// ----------------------
 // 8. Controllers & Swagger
 // ----------------------
 builder.Services.AddControllers().AddJsonOptions(options =>
@@ -169,37 +168,45 @@ builder.Services.AddSwaggerGen(c =>
 // ----------------------
 var app = builder.Build();
 
-app.UseSerilogRequestLogging();
-
-if (app.Environment.IsDevelopment())
+try
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSerilogRequestLogging();
+
+    if (app.Environment.IsDevelopment())
+    {
+        app.UseSwagger();
+        app.UseSwaggerUI();
+    }
+    else
+    {
+        app.UseHttpsRedirection();
+    }
+
+    app.UseCors("AllowFrontend");
+    app.UseStaticFiles();
+
+    app.UseAuthentication();
+    app.UseAuthorization();
+
+    app.MapControllers();
+
+    // --- Migration otomatik çalıştırma ---
+    using (var scope = app.Services.CreateScope())
+    {
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        db.Database.Migrate();
+    }
+
+    Log.Information("Uygulama başarıyla başlatıldı 🚀");
+    app.Run();
 }
-
-app.UseCors("AllowFrontend");
-app.UseStaticFiles();
-
-if (!app.Environment.IsDevelopment())
+catch (Exception ex)
 {
-    app.UseHttpsRedirection();
+    Log.Fatal(ex, "Uygulama başlatılırken kritik hata oluştu");
 }
-
-app.UseAuthentication();
-app.UseAuthorization();
-
-app.MapControllers();
-
-// --- Migration otomatik çalıştırma ---
-using (var scope = app.Services.CreateScope())
+finally
 {
-    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    db.Database.Migrate();
+    Log.CloseAndFlush();
 }
-
-Log.Information("Uygulama başarıyla başlatıldı 🚀");
-app.Run();
-
-Log.CloseAndFlush();
 
 public partial class Program { }

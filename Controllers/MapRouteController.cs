@@ -15,15 +15,31 @@ namespace GeziRotasi.API.Controllers
             _mapRouteService = mapRouteService;
         }
 
+        // --- Rota + POI ---
         [HttpPost("with-pois")]
-        public async Task<ActionResult<RouteResponseDto>> GetRouteWithPois([FromBody] RouteRequestDto request, CancellationToken ct)
+        public async Task<ActionResult<RouteResponseDto>> GetRouteWithPois(
+            [FromBody] RouteRequestDto request,
+            CancellationToken ct)
         {
             var result = await _mapRouteService.GetRouteWithPoisAsync(request, ct);
             return Ok(result);
         }
 
+        // --- Sadece rota ---
+        [HttpPost]
+        public async Task<ActionResult<RouteResponseDto>> GetRoute(
+            [FromBody] RouteRequestDto request,
+            CancellationToken ct)
+        {
+            var result = await _mapRouteService.GetRouteAsync(request, ct);
+            return Ok(result);
+        }
+
+        // --- Rota kaydet ---
         [HttpPost("save")]
-        public async Task<ActionResult<int>> SaveRoute([FromBody] RouteSaveRequest request, CancellationToken ct)
+        public async Task<ActionResult<int>> SaveRoute(
+            [FromBody] RouteSaveRequest request,
+            CancellationToken ct)
         {
             var routeId = await _mapRouteService.SaveRouteAsync(
                 request.Route,
