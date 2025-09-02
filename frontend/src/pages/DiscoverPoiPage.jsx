@@ -12,25 +12,16 @@ const DiscoverPoi = () => {
     const [selectedCategory, setSelectedCategory] = useState("Tümü");
 
     // Backend'deki PoiCategory enum'una göre kategori listesi
+    // Sağladığınız resimdeki veritabanı kategorilerine göre güncellendi
     const categories = [
         "Tümü",
-        "Yemek",
-        "Tarih",
-        "Sahil",
+        "Eğlence",
         "Kültür",
         "Alışveriş",
-        "Park",
-        "Müze",
-        "Restoran",
-        "Genel",
-        "Sanat",
-        "Doğa",
-        "Eğlence",
-        "Müzik",
+        "Önemli_Noktalar",
         "Karayolu",
-        "KültürelTesisler",
-        "OnemliNoktalar",
-        "TarihiTuristikTesisler",
+        "Yemek",
+        "Tarih",
     ];
 
     // API'den verileri çeken useEffect hook'u
