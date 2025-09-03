@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("GeziRotasi.API")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+6df0bf44c505451e9309ca69d33067003124c803")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+32d295824e24940048f432b228a58c193d38dca0")]
 [assembly: System.Reflection.AssemblyProductAttribute("GeziRotasi.API")]
 [assembly: System.Reflection.AssemblyTitleAttribute("GeziRotasi.API")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

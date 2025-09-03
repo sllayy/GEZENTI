@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace GeziRotasi.API.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250902141554_AddTravelRoutesDbSet")]
-    partial class AddTravelRoutesDbSet
+    [Migration("20250903095614_InitClean")]
+    partial class InitClean
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,6 +24,100 @@ namespace GeziRotasi.API.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+
+            modelBuilder.Entity("GeziRotasi.API.Domain.Categories.Category", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("Depth")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("text");
+
+                    b.Property<int?>("ParentId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Path")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Slug")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Categories");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Depth = 0,
+                            Name = "Alışveriş",
+                            Path = "/images/categories/alisveris.png",
+                            Slug = ""
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Depth = 0,
+                            Name = "Eğlence",
+                            Path = "/images/categories/eglence.png",
+                            Slug = ""
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Depth = 0,
+                            Name = "Karayolu",
+                            Path = "/images/categories/karayolu.png",
+                            Slug = ""
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Depth = 0,
+                            Name = "Kültür",
+                            Path = "/images/categories/kultur.png",
+                            Slug = ""
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Depth = 0,
+                            Name = "KültürelTesisler",
+                            Path = "/images/categories/kulturel.png",
+                            Slug = ""
+                        },
+                        new
+                        {
+                            Id = 6,
+                            Depth = 0,
+                            Name = "OnemliNoktalar",
+                            Path = "/images/categories/onemli.png",
+                            Slug = ""
+                        },
+                        new
+                        {
+                            Id = 7,
+                            Depth = 0,
+                            Name = "TarihiTuristikTesisler",
+                            Path = "/images/categories/tarihi.png",
+                            Slug = ""
+                        },
+                        new
+                        {
+                            Id = 8,
+                            Depth = 0,
+                            Name = "Yemek",
+                            Path = "/images/categories/yemek.png",
+                            Slug = ""
+                        });
+                });
 
             modelBuilder.Entity("GeziRotasi.API.Entities.AppUser", b =>
                 {
@@ -363,9 +457,56 @@ namespace GeziRotasi.API.Migrations
                     b.Property<string>("Duration")
                         .HasColumnType("text");
 
+                    b.HasKey("Id")
+                        .HasName("PK_TravelRoutes");
+
+                    b.ToTable("TravelRoutes", (string)null);
+                });
+
+            modelBuilder.Entity("GeziRotasi.API.Models.UserPreferences", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("AccessibilityFriendly")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("ConsiderTraffic")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("CrowdednessPreference")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("MaxEndTimeHour")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("MaxWalkDistance")
+                        .HasColumnType("integer");
+
+                    b.Property<double>("MinPoiRating")
+                        .HasColumnType("double precision");
+
+                    b.Property<int>("MinStartTimeHour")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("PreferredThemes")
+                        .HasColumnType("text");
+
+                    b.Property<string>("PreferredTransportationMode")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("PrioritizeShortestRoute")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer");
+
                     b.HasKey("Id");
 
-                    b.ToTable("TravelRoutes");
+                    b.ToTable("UserPreferences");
                 });
 
             modelBuilder.Entity("GeziRotasi.API.Models.WorkingHour", b =>
@@ -525,52 +666,6 @@ namespace GeziRotasi.API.Migrations
                     b.HasKey("UserId", "LoginProvider", "Name");
 
                     b.ToTable("AspNetUserTokens", (string)null);
-                });
-
-            modelBuilder.Entity("UserPreferences", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<bool>("AccessibilityFriendly")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("ConsiderTraffic")
-                        .HasColumnType("boolean");
-
-                    b.Property<int>("CrowdednessPreference")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("MaxEndTimeHour")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("MaxWalkDistance")
-                        .HasColumnType("integer");
-
-                    b.Property<double>("MinPoiRating")
-                        .HasColumnType("double precision");
-
-                    b.Property<int>("MinStartTimeHour")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("PreferredThemes")
-                        .HasColumnType("text");
-
-                    b.Property<string>("PreferredTransportationMode")
-                        .HasColumnType("text");
-
-                    b.Property<bool>("PrioritizeShortestRoute")
-                        .HasColumnType("boolean");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("UserPreferences");
                 });
 
             modelBuilder.Entity("GeziRotasi.API.Entities.EmailCode", b =>

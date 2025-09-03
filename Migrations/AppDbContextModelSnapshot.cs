@@ -458,9 +458,6 @@ namespace GeziRotasi.API.Migrations
                         .HasName("PK_TravelRoutes");
 
                     b.ToTable("TravelRoutes", (string)null);
-                    b.HasKey("Id");
-
-                    b.ToTable("TravelRoutes");
                 });
 
             modelBuilder.Entity("GeziRotasi.API.Models.UserPreferences", b =>
