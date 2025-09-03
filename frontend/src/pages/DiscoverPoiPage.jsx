@@ -7,12 +7,19 @@ const DiscoverPoi = () => {
     const [pois, setPois] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [visiblePois, setVisiblePois] = useState(6);
+
+    // Sunucudan sayfalı çekim için
+    const [pageNumber, setPageNumber] = useState(1);
+    const [hasMore, setHasMore] = useState(true);
+
+    // Ekranda gösterilecek kart sayısı
+    const [visiblePois, setVisiblePois] = useState(6); // başlangıçta 6 göster
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedCategory, setSelectedCategory] = useState("Tümü");
 
-    // Backend'deki PoiCategory enum'una göre kategori listesi
-    // Sağladığınız resimdeki veritabanı kategorilerine göre güncellendi
+    // Sunucu sayfa boyutu
+    const pageSize = 6;
+
     const categories = [
         "Tümü",
         "Eğlence",
@@ -24,42 +31,65 @@ const DiscoverPoi = () => {
         "Tarih",
     ];
 
-    // API'den verileri çeken useEffect hook'u
+    // POI verilerini çekme (server-side pagination)
+const fetchPois = async (reset = false) => {
+    setLoading(true);
+    setError(null);
+
+    let url = `${process.env.REACT_APP_API_URL}/pois?pageNumber=${reset ? 1 : pageNumber}&pageSize=${pageSize}`;
+    if (searchTerm) url += `&searchTerm=${encodeURIComponent(searchTerm)}`;
+    if (selectedCategory !== "Tümü" && categories.includes(selectedCategory)) {
+        url += `&category=${encodeURIComponent(selectedCategory)}`;
+    }
+
+    try {
+        const response = await fetch(url, { credentials: "omit" });
+        if (!response.ok) throw new Error("Veri alınamadı, sunucu hatası.");
+
+        const data = await response.json();
+
+        setPois((prev) => (reset ? data : [...prev, ...data]));
+        setHasMore(Array.isArray(data) && data.length === pageSize);
+
+        if (reset) {
+            setPageNumber(2);
+        } else {
+            setPageNumber((prev) => prev + 1);
+        }
+    } catch (err) {
+        setError(err.message || "Bilinmeyen hata");
+    } finally {
+        setLoading(false);
+    }
+};
+
+
+    // Arama veya kategori değişince listeyi sıfırla ve yeniden çek
     useEffect(() => {
-        const fetchPois = async () => {
-            setLoading(true);
-            setError(null);
-
-            let url = `https://localhost:7248/api/Pois?`;
-            
-            if (searchTerm) {
-                url += `searchTerm=${searchTerm}&`;
-            }
-            
-            // Seçili kategori "Tümü" değilse ve kategori listesinde varsa
-            if (selectedCategory !== "Tümü" && categories.includes(selectedCategory)) {
-                url += `category=${selectedCategory}&`;
-            }
-            
-            try {
-                const response = await fetch(url);
-                if (!response.ok) {
-                    throw new Error("Veri alınamadı, sunucu hatası.");
-                }
-                const data = await response.json();
-                setPois(data);
-            } catch (err) {
-                setError(err.message);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchPois();
+        setVisiblePois(6); // filtre/arama değiştiğinde ilk 6 görünsün
+        fetchPois(true);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [searchTerm, selectedCategory]);
 
-    const handleLoadMore = () => {
-        setVisiblePois((prevVisiblePois) => prevVisiblePois + 3);
+    // Daha Fazla Göster: her tıklamada 3 öğe artır
+    const handleLoadMore = async () => {
+        const nextVisible = visiblePois + 3;
+
+        // Elimizdeki data yeterli ise sadece görünümü artır
+        if (nextVisible <= pois.length) {
+            setVisiblePois(nextVisible);
+            return;
+        }
+
+        // Elimizde yetersiz ve sunucuda daha fazlası varsa çek
+        if (hasMore) {
+            await fetchPois(); // yeni sayfayı getir
+            // Yeni veriler eklendikten sonra görünümü yine 3 artır
+            setVisiblePois((prev) => prev + 3);
+        } else {
+            // Artık sunucuda da yoksa, mevcutların hepsini göster
+            setVisiblePois(pois.length);
+        }
     };
 
     return (
@@ -71,6 +101,7 @@ const DiscoverPoi = () => {
                 </p>
             </section>
 
+            {/* Arama ve kategori filtreleri */}
             <section className="bg-white p-6 rounded-lg shadow-md mb-8">
                 <div className="flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0 md:space-x-4">
                     <div className="relative flex-grow w-full md:w-auto">
@@ -83,33 +114,41 @@ const DiscoverPoi = () => {
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
                     </div>
+
                     <div className="flex flex-wrap justify-center gap-2">
-                        {categories.map(
-                            (category) => (
-                                <button
-                                    key={category}
-                                    className={`px-4 py-2 rounded-lg text-sm ${selectedCategory === category
+                        {categories.map((category) => (
+                            <button
+                                key={category}
+                                className={`px-4 py-2 rounded-lg text-sm ${selectedCategory === category
                                         ? "bg-orange-500 text-white"
                                         : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                                        }`}
-                                    onClick={() => setSelectedCategory(category)}
-                                >
-                                    {category}
-                                </button>
-                            )
-                        )}
+                                    }`}
+                                onClick={() => setSelectedCategory(category)}
+                            >
+                                {category}
+                            </button>
+                        ))}
                     </div>
                 </div>
             </section>
 
-            {loading && <div className="text-center text-xl text-gray-500 mt-10">POI'ler yükleniyor...</div>}
-            {error && <div className="text-center text-xl text-red-500 mt-10">Hata: {error}</div>}
+            {loading && (
+                <div className="text-center text-xl text-gray-500 mt-10">
+                    POI'ler yükleniyor...
+                </div>
+            )}
+            {error && (
+                <div className="text-center text-xl text-red-500 mt-10">
+                    Hata: {error}
+                </div>
+            )}
 
             {!loading && !error && (
                 <>
                     <section className="flex justify-between items-center mb-6">
                         <p className="text-gray-700 font-medium">
-                            <span className="font-bold">{pois.length}</span> POI bulundu
+                            <span className="font-bold">{pois.length}</span> POI yüklendi
+                            {hasMore ? " (daha fazlası mevcut)" : ""}
                         </p>
                     </section>
 
@@ -117,26 +156,28 @@ const DiscoverPoi = () => {
                         {pois.slice(0, visiblePois).map((poi) => (
                             <MainCard
                                 key={poi.id}
-                                image={poi.imageUrl}
-                                name={poi.name || poi.description} 
+                                imageUrl={poi.imageUrl}
+                                name={poi.name || poi.description}
                                 location={poi.description}
-                                tags={poi.tags} 
+                                tags={poi.tags}
                                 visitors={poi.visitors}
                                 category={poi.category}
                                 rating={poi.rating}
+                                id={poi.id}
                             />
                         ))}
                     </section>
                 </>
             )}
 
-            {visiblePois < pois.length && (
+            {/* Buton, ekranda gösterilen < toplam ya da sunucuda daha fazlası varsa görünsün */}
+            {!loading && !error && (visiblePois < pois.length || hasMore) && (
                 <div className="flex justify-center mt-12 mb-8">
                     <button
                         onClick={handleLoadMore}
                         className="bg-orange-500 text-white px-6 py-3 rounded-lg text-lg font-semibold hover:bg-orange-600 transition duration-300"
                     >
-                        + Daha Fazla Yükle
+                        + Daha Fazla Göster (3)
                     </button>
                 </div>
             )}

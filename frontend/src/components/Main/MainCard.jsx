@@ -1,21 +1,24 @@
 import React, { useState } from "react";
 import { FaStar, FaUsers, FaMapMarkerAlt } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 import Modal from "./Modal";
 
-// Kategoriye göre resim fallback eşleştirmesi (backend URL ile)
+// API Base URL (dotenv’den geliyor)
+const API_URL = process.env.REACT_APP_API_URL;
+
 const categoryImages = {
-  "Yemek": "http://localhost:5136/images/categories/yemek.png",
-  "Alışveriş": "http://localhost:5136/images/categories/alisveris.png",
-  "Eğlence": "http://localhost:5136/images/categories/eglence.png",
-  "Kültür": "http://localhost:5136/images/categories/kultur.png",
-  "OnemliNoktalar": "http://localhost:5136/images/categories/onemli.png",
-  "Karayolu": "http://localhost:5136/images/categories/otopark.png",
-  "TarihiTuristikTesisler": "http://localhost:5136/images/categories/tarihi.png",
-  "KültürelTesisler": "http://localhost:5136/images/categories/kulturel.png",
+  "Yemek": `${API_URL.replace("/api", "")}/images/categories/yemek.png`,
+  "Alışveriş": `${API_URL.replace("/api", "")}/images/categories/alisveris.png`,
+  "Eğlence": `${API_URL.replace("/api", "")}/images/categories/eglence.png`,
+  "Kültür": `${API_URL.replace("/api", "")}/images/categories/kultur.png`,
+  "OnemliNoktalar": `${API_URL.replace("/api", "")}/images/categories/onemli.png`,
+  "Karayolu": `${API_URL.replace("/api", "")}/images/categories/otopark.png`,
+  "TarihiTuristikTesisler": `${API_URL.replace("/api", "")}/images/categories/tarihi.png`,
+  "KültürelTesisler": `${API_URL.replace("/api", "")}/images/categories/kultur.png`,
 };
 
-
 const MainCard = ({
+  id,
   imageUrl,
   name,
   location,
@@ -25,44 +28,107 @@ const MainCard = ({
   category,
   rating,
   comments,
+  latitude,
+  longitude,
 }) => {
-  // Varsayılan resim
+  const navigate = useNavigate();
   const defaultImage = "/anasayfa.png";
+  const resolvedImage = imageUrl || categoryImages[category] || defaultImage;
 
-  // Gösterilecek resim: Öncelik → imageUrl → kategori fallback → default
-  const resolvedImage =
-    imageUrl || categoryImages[category] || defaultImage;
-
-  // Yorumları state'e al
   const [allSubmissions, setAllSubmissions] = useState(
-    (comments || []).map((comment) => ({ type: "comment", text: comment }))
+    (comments || []).map((r) => ({
+      type: "full",
+      text: r.comment,
+      rating: r.rating,
+      emoji: r.emoji,
+      createdAt: r.createdAt,
+    }))
   );
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const openModal = () => setIsModalOpen(true);
+  // --- Backend’den yorumları çek ---
+  const loadReviews = async () => {
+    if (!id) return;
+    try {
+      const res = await fetch(`${API_URL}/pois/${id}/reviews`);
+      if (!res.ok) {
+        console.error("Yorumlar yüklenemedi:", res.statusText);
+        return;
+      }
+      const data = await res.json();
+      setAllSubmissions(
+        (data || []).map((r) => ({
+          type: "full",
+          text: r.comment,
+          rating: r.rating,
+          emoji: r.emoji,
+          createdAt: r.createdAt,
+        }))
+      );
+    } catch (err) {
+      console.error("Yorum çekme hatası:", err);
+    }
+  };
+
+  // --- Modal açıldığında yorumları getir ---
+  const openModal = () => {
+    setIsModalOpen(true);
+    loadReviews();
+  };
   const closeModal = () => setIsModalOpen(false);
 
-  const handleSubmission = (submission) => {
-    if (submission.comment.length > 0) {
-      setAllSubmissions((prevSubmissions) => [
-        {
-          type: "full",
-          text: submission.comment,
-          rating: submission.rating,
-          emoji: submission.emoji,
-        },
-        ...prevSubmissions,
-      ]);
-    } else {
-      setAllSubmissions((prevSubmissions) => [
-        {
-          type: "ratingOnly",
-          rating: submission.rating,
-          emoji: submission.emoji,
-        },
-        ...prevSubmissions,
-      ]);
+  // --- Yeni yorum gönder ---
+  const handleSubmission = async (submission) => {
+    try {
+      const res = await fetch(`${API_URL}/pois/${id}/reviews`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(submission),
+      });
+
+      if (!res.ok) {
+        throw new Error(await res.text());
+      }
+
+      const newReview = await res.json();
+
+      if (newReview.comment && newReview.comment.length > 0) {
+        setAllSubmissions((prev) => [
+          {
+            type: "full",
+            text: newReview.comment,
+            rating: newReview.rating,
+            emoji: newReview.emoji,
+            createdAt: newReview.createdAt,
+          },
+          ...prev,
+        ]);
+      } else {
+        setAllSubmissions((prev) => [
+          {
+            type: "ratingOnly",
+            rating: newReview.rating,
+            emoji: newReview.emoji,
+            createdAt: newReview.createdAt,
+          },
+          ...prev,
+        ]);
+      }
+
+      closeModal();
+    } catch (err) {
+      console.error("Yorum gönderme hatası:", err);
+      alert("Yorum gönderilemedi: " + err.message);
     }
+  };
+
+  // POI’yi rotaya ekle
+  const handleAddToRoute = () => {
+    navigate("/map", {
+      state: {
+        poiToAdd: { id, name, latitude, longitude, category },
+      },
+    });
   };
 
   return (
@@ -89,11 +155,10 @@ const MainCard = ({
         </p>
         <p className="text-sm text-gray-600 mt-2">{description}</p>
 
-        {/* Tags */}
         <div className="flex flex-wrap gap-2 mt-3">
-          {tags?.map((tag, index) => (
+          {tags?.map((tag, i) => (
             <span
-              key={index}
+              key={i}
               className="bg-gray-100 text-gray-700 px-2 py-1 text-xs rounded-full"
             >
               {tag}
@@ -101,7 +166,6 @@ const MainCard = ({
           ))}
         </div>
 
-        {/* Alt butonlar */}
         <div className="flex justify-between items-center mt-4 text-sm text-gray-500">
           <div className="flex items-center space-x-1">
             <FaUsers />
@@ -112,9 +176,12 @@ const MainCard = ({
               className="px-3 py-1 border rounded-lg hover:bg-gray-100"
               onClick={openModal}
             >
-              Detaylar
+              Detaylar ve Yorumlar
             </button>
-            <button className="px-3 py-1 bg-orange-400 text-white rounded-lg hover:bg-orange-500">
+            <button
+              className="px-3 py-1 bg-orange-400 text-white rounded-lg hover:bg-orange-500"
+              onClick={handleAddToRoute}
+            >
               Rotaya Ekle
             </button>
           </div>
@@ -126,6 +193,7 @@ const MainCard = ({
         isOpen={isModalOpen}
         onClose={closeModal}
         onRateSubmit={handleSubmission}
+        poiId={id}
       >
         <h2 className="text-2xl font-bold mb-2">{name}</h2>
         <p className="text-gray-600 mb-4">{description}</p>

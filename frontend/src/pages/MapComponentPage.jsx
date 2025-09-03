@@ -23,13 +23,13 @@ const MapComponentPage = () => {
   const [startPoint, setStartPoint] = useState(null);
   const [endPoint, setEndPoint] = useState(null);
 
-  const [pois, setPois] = useState([]); // sağdaki liste
+  const [pois, setPois] = useState([]);
   const [filteredPois, setFilteredPois] = useState([]);
-  const [selectedPoisForRoute, setSelectedPoisForRoute] = useState([]); // rota için seçilenler
+  const [selectedPoisForRoute, setSelectedPoisForRoute] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedPoi, setSelectedPoi] = useState(null);
   const [routeGeometry, setRouteGeometry] = useState(null);
-  const [visibleCount, setVisibleCount] = useState(10); // ilk 10 POI
+  const [visibleCount, setVisibleCount] = useState(10);
 
   const markerSource = useRef(new VectorSource()).current;
   const routeSource = useRef(new VectorSource()).current;
@@ -120,7 +120,7 @@ const MapComponentPage = () => {
       const body = {
         mode: "driving",
         coordinates: [start, ...(end ? [end] : [])],
-        pois: selectedPoisForRoute.map((p) => [p.longitude, p.latitude]), // rota içine dahil et
+        pois: selectedPoisForRoute.map((p) => [p.longitude, p.latitude]),
       };
 
       const data = await routeAPI.getRouteWithPois(body);
@@ -306,7 +306,15 @@ const MapComponentPage = () => {
                     className="text-gray-500 hover:text-blue-600"
                     onClick={(e) => {
                       e.stopPropagation();
+                      // POI'yi seçilenlere ekle
                       setSelectedPoisForRoute((prev) => [...prev, poi]);
+                      // POI'yi aynı zamanda rota bitiş noktası yap
+                      setEndPoint({ coords: [poi.longitude, poi.latitude], name: poi.name });
+                      // Eğer mevcut konum varsa, rota çiz
+                      if (startPoint) {
+                        const endCoords = [poi.longitude, poi.latitude];
+                        fetchPoisOrRoute(startPoint.coords, endCoords);
+                      }
                     }}
                   >
                     <FaPlus />

@@ -1,65 +1,72 @@
-using GeziRotasi.API.Dtos; // Namespace'i kendi projenle eşleşmiyorsa güncelle.
+using GeziRotasi.API.Dtos;
 using System.Globalization;
 using System.Net.Http.Json;
 
-namespace GeziRotasi.API.Services // Namespace'i kendi projenle eşleşmiyorsa güncelle.
+namespace GeziRotasi.API.Services
 {
     public class OsmService
     {
         private readonly IHttpClientFactory _httpClientFactory;
+        private readonly ILogger<OsmService> _logger;
 
-        // Constructor: .NET'in HttpClient'ı yönetmesi için IHttpClientFactory'i alır.
-        public OsmService(IHttpClientFactory httpClientFactory)
+        public OsmService(IHttpClientFactory httpClientFactory, ILogger<OsmService> logger)
         {
             _httpClientFactory = httpClientFactory;
+            _logger = logger;
         }
 
-        // --- BU METOT ZATEN VARDI, DEĞİŞİKLİK YOK ---
-        // Yakındaki yerleri aramak için kullanılır.
+        // --- Yakındaki yerleri getir ---
         public async Task<OverpassResponse> GetPlacesAsync(double latitude, double longitude, string placeType, int radius = 1000)
         {
-            // Sayıları API'nin anlayacağı formata (noktalı) çevirir.
+            // Sayıları noktalı formatla çevir (OSM için şart)
             string latStr = latitude.ToString(CultureInfo.InvariantCulture);
             string lonStr = longitude.ToString(CultureInfo.InvariantCulture);
 
-            // Overpass API'ye gönderilecek sorgu metni.
+            // Overpass API sorgusu
             var overpassQuery = $@"
-                [out:json][timeout:25];
+                [out:json][timeout:60];
                 (
-                node[""amenity""=""{placeType}""](around:{radius},{latitude},{longitude});
-                way[""amenity""=""{placeType}""](around:{radius},{latitude},{longitude});
+                  node[""amenity""=""{placeType}""](around:{radius},{latStr},{lonStr});
+                  way[""amenity""=""{placeType}""](around:{radius},{latStr},{lonStr});
                 );
                 out body;
                 >;
                 out skel qt;
             ";
 
-
             var client = _httpClientFactory.CreateClient();
             var overpassApiUrl = "https://overpass-api.de/api/interpreter";
 
-            // Sorguyu API'nin beklediği formatta hazırla.
             var content = new FormUrlEncodedContent(new[]
             {
                 new KeyValuePair<string, string>("data", overpassQuery)
             });
 
-            var response = await client.PostAsync(overpassApiUrl, content);
-            response.EnsureSuccessStatusCode(); // Hata varsa burada program durur.
+            _logger.LogInformation("Overpass Query: {Query}", overpassQuery);
 
-            // Gelen JSON cevabını C# nesnelerine çevir.
+            var response = await client.PostAsync(overpassApiUrl, content);
+
+            // Eğer API başarısız dönerse logla
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorMsg = await response.Content.ReadAsStringAsync();
+                _logger.LogError("Overpass API hatası: {StatusCode} - {Message}", response.StatusCode, errorMsg);
+                response.EnsureSuccessStatusCode(); // Exception fırlatır
+            }
+
+            var responseString = await response.Content.ReadAsStringAsync();
+            _logger.LogInformation("Overpass Response: {Response}", responseString);
+
             var result = await response.Content.ReadFromJsonAsync<OverpassResponse>();
-            return result;
+            return result!;
         }
 
-        // --- YENİ EKLENEN METOT BURASI ---
-        // Tek bir mekanın ID'sini kullanarak detaylarını getirmek için kullanılır.
-        public async Task<OsmElement> GetPlaceDetailsAsync(long elementId)
+        // --- Tek bir mekanın detayını getir ---
+        public async Task<OsmElement?> GetPlaceDetailsAsync(long elementId)
         {
             var client = _httpClientFactory.CreateClient();
             var overpassApiUrl = "https://overpass-api.de/api/interpreter";
 
-            // Overpass Sorgusu: Sadece belirtilen ID'ye sahip olan elemanı (node veya way) getirir.
             var overpassQuery = $@"
                 [out:json];
                 (
@@ -75,14 +82,16 @@ namespace GeziRotasi.API.Services // Namespace'i kendi projenle eşleşmiyorsa g
             });
 
             var response = await client.PostAsync(overpassApiUrl, content);
-            response.EnsureSuccessStatusCode();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorMsg = await response.Content.ReadAsStringAsync();
+                _logger.LogError("Overpass API detay sorgusu hatası: {StatusCode} - {Message}", response.StatusCode, errorMsg);
+                response.EnsureSuccessStatusCode();
+            }
 
             var result = await response.Content.ReadFromJsonAsync<OverpassResponse>();
-
-            // API'den gelen cevapta bir eleman varsa onu döndürür, yoksa null döner.
             return result?.Elements.FirstOrDefault();
         }
     }
 }
-
-// --- BİTİŞ --- KOPYALAMAYI BURADA BİTİR

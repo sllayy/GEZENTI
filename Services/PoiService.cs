@@ -31,13 +31,13 @@ namespace GeziRotasi.API.Services
             string? sortBy,
             string? sortDirection,
             int pageNumber = 1,
-            int pageSize = 10)
+            int pageSize = 10) // ✅ Default 10
         {
             var query = _context.Pois
                 .Include(p => p.Reviews) // Yorumları da dahil et
                 .AsQueryable();
 
-            // Kategoriye göre filtreleme (string → enum parse)
+            // Kategoriye göre filtreleme
             if (!string.IsNullOrWhiteSpace(category) &&
                 Enum.TryParse<PoiCategory>(category, true, out var categoryEnum))
             {
@@ -72,8 +72,7 @@ namespace GeziRotasi.API.Services
                             : query.OrderBy(p => p.Category);
                         break;
 
-                    case "populer":
-                        // EF Core çevirilebilir hale getirildi ✅
+                    case "populer": // ✅ EF Core uyumlu versiyon
                         query = isDescending
                             ? query
                                 .Select(p => new { Poi = p, ReviewCount = p.Reviews.Count })
@@ -107,7 +106,7 @@ namespace GeziRotasi.API.Services
                 .FirstOrDefaultAsync(p => p.Id == id);
         }
 
-        // --- YAZMA (CREATE, UPDATE, DELETE) İŞLEMLERİ ---
+        // --- YAZMA (CREATE, UPDATE, DELETE) ---
         public async Task<Poi> CreatePoiAsync(Poi newPoi)
         {
             _context.Pois.Add(newPoi);
@@ -153,7 +152,7 @@ namespace GeziRotasi.API.Services
             await _context.SaveChangesAsync();
         }
 
-        // --- OSM ENTEGRASYON İŞLEMLERİ ---
+        // --- OSM ENTEGRASYON ---
         public async Task<bool> IsOsmIdExistsAsync(long osmId)
         {
             return await _context.Pois.AnyAsync(p => p.ExternalApiId == osmId.ToString());
@@ -179,7 +178,7 @@ namespace GeziRotasi.API.Services
             return await CreatePoiAsync(newPoi);
         }
 
-        // --- ÇALIŞMA SAATLERİ İŞLEMLERİ ---
+        // --- ÇALIŞMA SAATLERİ ---
         public async Task<List<WorkingHour>> GetWorkingHoursForPoiAsync(int poiId)
         {
             return await _context.WorkingHours
@@ -209,7 +208,22 @@ namespace GeziRotasi.API.Services
             return specialDayHour;
         }
 
-        // --- GEOJSON DÖNÜŞTÜRME ---
+        // --- YORUM (REVIEW) ---
+        public async Task<Review> CreateReviewAsync(Review newReview)
+        {
+            _context.Reviews.Add(newReview);
+            await _context.SaveChangesAsync();
+            return newReview;
+        }
+
+        public async Task<List<Review>> GetReviewsForPoiAsync(int poiId)
+        {
+            return await _context.Reviews
+                                .Where(r => r.PoiId == poiId)
+                                .ToListAsync();
+        }
+
+        // --- GEOJSON ---
         public string ConvertPoisToGeoJson(List<Poi> pois)
         {
             var features = new List<Feature>();

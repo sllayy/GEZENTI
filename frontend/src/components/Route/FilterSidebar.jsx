@@ -25,10 +25,10 @@ const FilterSidebar = ({ filters, onFilterChange, onApply, onReset }) => {
     ];
 
     const durations = [
-        { name: 'Kısa (2-4 saat)', key: 'Kisa', count: 23 },
-        { name: 'Orta (4-6 saat)', key: 'Orta', count: 31 },
-        { name: 'Uzun (6+ saat)', key: 'Uzun', count: 18 },
-        { name: 'Çok Günlük', key: 'CokGunluk', count: 12 }
+        { name: 'Kısa (2-4 saat)', key: 'short', count: 23 },
+        { name: 'Orta (4-6 saat)', key: 'medium', count: 31 },
+        { name: 'Uzun (6+ saat)', key: 'long', count: 18 },
+        { name: 'Çok Günlük', key: 'multi', count: 12 }
     ];
 
     // null güvenliği için selectedCategory her zaman dizi olacak
@@ -143,8 +143,16 @@ const FilterSidebar = ({ filters, onFilterChange, onApply, onReset }) => {
             {/* Butonlar */}
             <div className="space-y-3">
                 <button
-                    onClick={onApply}
-                    className="w-full flex justify-center items-center py-3 px-4 font-semibold text-white rounded-xl  bg-orange-500 hover:bg-orange-600 shadow-md"
+                    onClick={() => {
+                        const filter = {
+                            categories: filters.selectedCategory || [],
+                            minRating: filters.ratingValue || null,
+                            maxDistanceKm: filters.distanceValue || null,
+                            duration: filters.selectedDuration || ""
+                        };
+                        onApply(filter);
+                    }}
+                    className="w-full flex justify-center items-center py-3 px-4 font-semibold text-white rounded-xl bg-orange-500 hover:bg-orange-600 shadow-md"
                 >
                     <i className="pi pi-check mr-2"></i>Filtreleri Uygula
                 </button>

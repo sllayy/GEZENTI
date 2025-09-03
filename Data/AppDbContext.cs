@@ -36,7 +36,6 @@ namespace GeziRotasi.API.Data
         public DbSet<UserPreferences> UserPreferences { get; set; }
         public DbSet<TravelRoute> TravelRoutes { get; set; }
 
-
         // -------------------
         // MODEL YAPILANDIRMA
         // -------------------

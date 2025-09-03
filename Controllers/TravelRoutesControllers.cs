@@ -1,8 +1,8 @@
 ﻿using GeziRotasi.API.Data;
+using GeziRotasi.API.Dtos;
 using GeziRotasi.API.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Threading.Tasks;
 
 namespace GeziRotasi.API.Controllers
 {
@@ -83,6 +83,30 @@ namespace GeziRotasi.API.Controllers
             _db.TravelRoutes.Remove(route);
             await _db.SaveChangesAsync();
             return NoContent();
+        }
+
+        /// <summary>
+        /// Travel route filtreleme
+        /// </summary>
+        [HttpPost("filter")]
+        public async Task<IActionResult> Filter([FromBody] RouteFilterDto filter)
+        {
+            var query = _db.TravelRoutes.AsQueryable();
+
+            if (filter.Categories != null && filter.Categories.Any())
+                query = query.Where(r => filter.Categories.Contains(r.Category));
+
+            if (filter.MinRating.HasValue)
+                query = query.Where(r => r.AverageRating >= filter.MinRating.Value);
+
+            if (filter.MaxDistanceKm.HasValue)
+                query = query.Where(r => r.DistanceKm <= filter.MaxDistanceKm.Value);
+
+            if (!string.IsNullOrEmpty(filter.Duration))
+                query = query.Where(r => r.Duration == filter.Duration);
+
+            var result = await query.ToListAsync();
+            return Ok(result);
         }
     }
 }

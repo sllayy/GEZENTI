@@ -1,6 +1,7 @@
 using GeziRotasi.API.Data;
 using GeziRotasi.API.Entities;
 using GeziRotasi.API.Services;
+using GeziRotasi.API.Models;
 using GeziRotasi.API.Repositories.Categories;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -190,12 +191,30 @@ try
 
     app.MapControllers();
 
-    // --- Migration otomatik çalıştırma ---
+    // --- Migration otomatik çalıştırma + Seed veriler ---
     using (var scope = app.Services.CreateScope())
     {
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         db.Database.Migrate();
+
+        // Eğer TravelRoutes tablosu boşsa kategorileri ekle
+        if (!db.TravelRoutes.Any())
+        {
+            db.TravelRoutes.AddRange(
+                new TravelRoute { Category = "Tarih", AverageRating = 4.5, DistanceKm = 10, Duration = "short" },
+                new TravelRoute { Category = "Yemek", AverageRating = 4.7, DistanceKm = 5, Duration = "short" },
+                new TravelRoute { Category = "Müzik", AverageRating = 4.6, DistanceKm = 12, Duration = "medium" },
+                new TravelRoute { Category = "Müze", AverageRating = 4.8, DistanceKm = 8, Duration = "short" },
+                new TravelRoute { Category = "Alışveriş", AverageRating = 4.4, DistanceKm = 15, Duration = "medium" },
+                new TravelRoute { Category = "Eğlence", AverageRating = 4.9, DistanceKm = 20, Duration = "long" },
+                new TravelRoute { Category = "Sanat", AverageRating = 4.3, DistanceKm = 7, Duration = "short" },
+                new TravelRoute { Category = "Sahil", AverageRating = 4.6, DistanceKm = 30, Duration = "medium" },
+                new TravelRoute { Category = "Doğa", AverageRating = 4.9, DistanceKm = 50, Duration = "long" }
+            );
+            db.SaveChanges();
+        }
     }
+
 
     Log.Information("Uygulama başarıyla başlatıldı 🚀");
     app.Run();

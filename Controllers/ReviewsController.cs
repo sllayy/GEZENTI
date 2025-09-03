@@ -1,42 +1,53 @@
-using Microsoft.AspNetCore.Mvc; // ASP.NET Core'un temel parçalarını kullanabilmek için.
+// GeziRotasi.API/Controllers/ReviewsController.cs
+
+#nullable enable
+using Microsoft.AspNetCore.Mvc;
 using GeziRotasi.API.Models;
-using GeziRotasi.API.Dtos;      // Az önce oluşturduğumuz DTO'yu tanıyabilmesi için.
+using GeziRotasi.API.Dtos;
+using GeziRotasi.API.Services; 
+using System;
+using System.Threading.Tasks;
+
 namespace GeziRotasi.API.Controllers;
 
-// Bu satırlar, bu sınıfın bir API olduğunu ve adresinin nasıl olacağını belirtir.
 [ApiController]
 [Route("api/pois/{poiId}/reviews")]
 public class ReviewsController : ControllerBase
 {
-    // --- YENİ YORUM EKLEME BEYNİ ---
-    // [HttpPost] -> Bu metodun, veri EKLEMEK için kullanılan bir POST isteğini dinlediğini söyler.
-    [HttpPost]
-    public IActionResult CreateReviewForPoi(int poiId, [FromBody] CreateReviewDto reviewDto)
+    private readonly PoiService _poiService;
+
+    public ReviewsController(PoiService poiService)
     {
-        // Parametrelerin Anlamı:
-        // int poiId              -> Adresteki {poiId} değişkeninden gelen sayıyı alır. (Örn: 123)
-        // [FromBody] CreateReviewDto reviewDto -> Frontend'in yolladığı veri paketini alır.
-
-        // Şimdilik sadece isteğin gelip gelmediğini ve verilerin doğru olduğunu kontrol edelim.
-        Console.WriteLine($"Gelen Puan: {reviewDto.Rating}, Gelen Yorum: {reviewDto.Comment}, Mekan ID: {poiId}");
-
-        // Frontend'e "İşlem başarılı, yorumun alındı" mesajı gönderiyoruz.
-        return Ok(new { message = "Yorum başarıyla oluşturuldu." });
+        _poiService = poiService;
     }
 
-    // --- YORUMLARI LİSTELEME BEYNİ ---
-    // [HttpGet] -> Bu metodun, veri GETİRMEK için kullanılan bir GET isteğini dinlediğini söyler.
-    [HttpGet]
-    public IActionResult GetReviewsForPoi(int poiId)
+    [HttpPost]
+    public async Task<IActionResult> CreateReviewForPoi(int poiId, [FromBody] CreateReviewDto reviewDto)
     {
-        // Frontend ekibi test edebilsin diye şimdilik SAHTE (mock) veri gönderelim.
-        var fakeReviews = new List<object>
+        // Gelen DTO'yu, veritabanı modeliniz olan Review'e dönüştürüyoruz.
+        var newReview = new Review
         {
-            new { userId = 1, rating = 5, comment = "Manzarası harikaydı, kesinlikle tavsiye ederim!" },
-            new { userId = 2, rating = 4, comment = "Giriş biraz pahalı ama değer." }
+            PoiId = poiId,
+            Rating = reviewDto.Rating,
+            Comment = reviewDto.Comment,
+            // Sizin tablonuzdaki 'CreatedAt' kolonuna göre güncellendi.
+            CreatedAt = DateTime.UtcNow, 
+            // 'Poil' kolonunu kullanmak yerine, ilişkisel modelinize uygun olarak 'PoiId' kullanıyoruz.
+            // Sizin tablonuzdaki UserId kolonuna göre güncellendi.
+            UserId = 1, // Gerçek bir kullanıcı sistemi olmadığından sabit değer kullanıldı.
+            Emoji = reviewDto.Emoji,
         };
 
-        // Bulduğumuz sahte yorumları frontend'e gönderiyoruz.
-        return Ok(fakeReviews);
+        // Yorumu PoiService aracılığıyla veritabanına kaydediyoruz.
+        var createdReview = await _poiService.CreateReviewAsync(newReview);
+
+        return Ok(createdReview);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> GetReviewsForPoi(int poiId)
+    {
+        var reviews = await _poiService.GetReviewsForPoiAsync(poiId);
+        return Ok(reviews);
     }
 }

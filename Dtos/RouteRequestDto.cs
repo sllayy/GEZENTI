@@ -27,8 +27,11 @@ namespace GeziRotasi.API.Dtos
         // alternatives dönerse birincil seçimi etkiler: fastest|shortest|balanced
         public string Preference { get; set; } = "fastest";
 
-        // nearest için yarıçaplar (metre); opsiyonel
-        public int[]? Radiuses { get; set; }
+        /// <summary>
+        /// POI arama yarıçapı (metre cinsinden). Default = 3000m
+        /// </summary>
+        public int SearchRadius { get; set; } = 3000;
+
         public int UserId { get; set; }
 
         /// <summary>

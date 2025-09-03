@@ -63,7 +63,7 @@ namespace GeziRotasi.API.Services
 
             RouteResponseDto route;
 
-            // Başlangıç + bitiş varsa rota çiz
+            // rota çiz
             if (request.Coordinates.Count >= 2)
             {
                 var mode = NormalizeMode(request.Mode);
@@ -91,7 +91,7 @@ namespace GeziRotasi.API.Services
             }
             else
             {
-                // sadece başlangıç varsa
+                // sadece başlangıç
                 route = new RouteResponseDto
                 {
                     Distance = 0,
@@ -106,62 +106,44 @@ namespace GeziRotasi.API.Services
                 };
             }
 
-            // POI’leri hesapla
+            // --- POI'leri ekle ---
             try
             {
-                var start = request.Coordinates[0];
-                var poisQuery = _db.Pois
+                var startLon = request.Coordinates[0][0];
+                var startLat = request.Coordinates[0][1];
+                var searchRadius = request.SearchRadius > 0 ? request.SearchRadius : 3000; // default 3 km
+
+                // EF Core'dan raw liste çek → RAM'de Haversine uygula
+                var poisFromDb = await _db.Pois.AsNoTracking().ToListAsync(ct);
+
+                var nearbyPois = poisFromDb
                     .Select(p => new
                     {
                         Entity = p,
                         AvgRating = _db.Reviews
                             .Where(r => r.PoiId == p.Id)
                             .Average(r => (double?)r.Rating) ?? 0,
-                        Distance = Haversine(start[1], start[0], p.Latitude, p.Longitude)
-                    });
-
-                if (route.Geometry is JsonElement geomElement && geomElement.TryGetProperty("coordinates", out var coords))
-                {
-                    var lineCoords = coords.EnumerateArray()
-                        .Select(c => new double[] { c[0].GetDouble(), c[1].GetDouble() })
-                        .ToList();
-
-                    poisQuery = poisQuery.Select(x => new
-                    {
-                        x.Entity,
-                        x.AvgRating,
-                        Distance = lineCoords.Min(c =>
-                            Haversine(c[1], c[0], x.Entity.Latitude, x.Entity.Longitude))
-                    });
-
-                    // rota varsa → 3 km
-                    poisQuery = poisQuery.Where(x => x.Distance <= 3000);
-                }
-                else
-                {
-                    // sadece başlangıç → 30 km
-                    poisQuery = poisQuery.Where(x => x.Distance <= 30000);
-                }
-
-                var pois = await poisQuery
+                        Distance = Haversine(startLat, startLon, p.Latitude, p.Longitude)
+                    })
+                    .Where(x => x.Distance <= searchRadius)
                     .OrderByDescending(x => x.AvgRating)
                     .ThenBy(x => x.Distance)
-                    .Select(x => new PoiDto
-                    {
-                        Id = x.Entity.Id,
-                        Name = x.Entity.Name,
-                        Description = x.Entity.Description ?? "",
-                        Latitude = x.Entity.Latitude,
-                        Longitude = x.Entity.Longitude,
-                        Category = x.Entity.Category.ToString(),
-                        AvgRating = x.AvgRating,
-                        IsOpenNow = true,
-                        DistanceMeters = x.Distance
-                    })
-                    .ToListAsync(ct);
+                    .ToList();
 
-                route.VisitPois = pois;
-                _logger.LogInformation("poi ve rota service try → {Count} POI bulundu", pois.Count);
+                route.VisitPois = nearbyPois.Select(x => new PoiDto
+                {
+                    Id = x.Entity.Id,
+                    Name = x.Entity.Name,
+                    Description = x.Entity.Description ?? "",
+                    Latitude = x.Entity.Latitude,
+                    Longitude = x.Entity.Longitude,
+                    Category = x.Entity.Category.ToString(),
+                    AvgRating = x.AvgRating,
+                    IsOpenNow = true,
+                    DistanceMeters = x.Distance
+                }).ToList();
+
+                _logger.LogInformation("poi ve rota service → {Count} POI bulundu", route.VisitPois.Count);
             }
             catch (Exception ex)
             {
@@ -172,7 +154,6 @@ namespace GeziRotasi.API.Services
             return route;
         }
 
-        // Rota kaydetme
         public async Task<int> SaveRouteAsync(RouteResponseDto dto, int userId, double[] start, double[]? end, CancellationToken ct)
         {
             var route = new Models.Route
@@ -189,14 +170,14 @@ namespace GeziRotasi.API.Services
             _db.Routes.Add(route);
             await _db.SaveChangesAsync(ct);
 
-            _logger.LogInformation("poi ve rota service try → rota kaydedildi {RouteId}", route.Id);
+            _logger.LogInformation("rota kaydedildi {RouteId}", route.Id);
             return route.Id;
         }
 
-        // Haversine hesap
+        // --- Helper'lar ---
         private static double Haversine(double lat1, double lon1, double lat2, double lon2)
         {
-            const double R = 6371000;
+            const double R = 6371000; // metre
             var dLat = DegreesToRadians(lat2 - lat1);
             var dLon = DegreesToRadians(lon2 - lon1);
 
@@ -229,9 +210,8 @@ namespace GeziRotasi.API.Services
             var body = await resp.Content.ReadAsStringAsync(ct);
 
             if (!resp.IsSuccessStatusCode)
-            {
                 throw new InvalidOperationException($"OSRM {resp.StatusCode}: {resp.ReasonPhrase}");
-            }
+
             return body;
         }
 
