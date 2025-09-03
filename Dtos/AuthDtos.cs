@@ -14,7 +14,7 @@ namespace loginpage.Models
     {
         [Required, EmailAddress] public string Email { get; set; } = null!;
         [Required, StringLength(6, MinimumLength = 6)]
-        public string Code { get; set; } = null!; // 6 hane
+        public string Code { get; set; } = null!; 
     }
 
     public class LoginDto
@@ -47,6 +47,8 @@ namespace loginpage.Models
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public string Email { get; set; } = null!;
+        public int AvatarIndex { get; set; }
+        public string? AboutMe { get; set; }
     }
 
     public class TokenResponse

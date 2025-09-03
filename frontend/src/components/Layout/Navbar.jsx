@@ -4,27 +4,32 @@ import { Button } from 'primereact/button';
 import { Avatar } from 'primereact/avatar';
 
 // isLoggedIn, setIsLoggedIn ve userName state'leri App.js'ten prop olarak geliyor.
-const Navbar = ({ isLoggedIn, setIsLoggedIn, userName }) => {
+const Navbar = ({ isLoggedIn, setIsLoggedIn, userName, avatarIndex }) => {
     const location = useLocation();
     const navigate = useNavigate();
+
+    const avatars = [
+        "/assets/avatar1.png",
+        "/assets/avatar2.png",
+        "/assets/avatar3.png",
+        "/assets/avatar4.png",
+        "/assets/avatar5.png",
+        "/assets/avatar6.png",
+        "/assets/avatar7.png"
+    ];
 
     // Çıkış yapma fonksiyonu
     const handleLogout = () => {
         // Local storage temizle
         localStorage.removeItem("jwtToken");
         localStorage.removeItem("userName");
+        localStorage.removeItem("avatarIndex");
 
         // State güncelle
         setIsLoggedIn(false);
 
         // Ana sayfaya yönlendir
         navigate('/');
-    };
-
-    // Kullanıcı adının ilk harfini alma
-    const getInitial = (name) => {
-        if (!name) return "";
-        return name.charAt(0).toUpperCase();
     };
 
     // Navigasyon linklerinin listesi
@@ -55,8 +60,8 @@ const Navbar = ({ isLoggedIn, setIsLoggedIn, userName }) => {
                                 key={item.path}
                                 to={item.path}
                                 className={`text-sm font-medium transition-colors hover:text-blue-600 ${location.pathname === item.path
-                                        ? 'text-blue-600 border-b-2 border-blue-600'
-                                        : 'text-gray-500'
+                                    ? 'text-blue-600 border-b-2 border-blue-600'
+                                    : 'text-gray-500'
                                     }`}
                             >
                                 {item.label}
@@ -70,11 +75,11 @@ const Navbar = ({ isLoggedIn, setIsLoggedIn, userName }) => {
                             // Kullanıcı giriş yapmışsa bu bölüm gösterilir
                             <div className="flex items-center space-x-3">
                                 <Avatar
-                                    label={getInitial(userName)} // Kullanıcı isminin ilk harfi
+                                    image={avatars[avatarIndex]}
                                     shape="circle"
                                     size="large"
-                                    className="bg-blue-500 text-white cursor-pointer"
-                                    onClick={() => navigate("/profile")} // Profil sayfasına yönlendirme
+                                    className="cursor-pointer"
+                                    onClick={() => navigate("/profile")}
                                 />
                                 <Button
                                     label="Çıkış Yap"

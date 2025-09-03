@@ -2,10 +2,12 @@
 import { Navigate } from "react-router-dom";
 
 const PrivateRoute = ({ isLoggedIn, children }) => {
-    if (!isLoggedIn) {
-        
+    const token = localStorage.getItem("jwtToken");
+
+    if (!isLoggedIn && !token) {
         return <Navigate to="/login" replace />;
-    }    
+    }
+
     return children;
 };
 

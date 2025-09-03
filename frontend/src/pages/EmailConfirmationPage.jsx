@@ -11,12 +11,25 @@ const EmailConfirmationPage = ({ setIsLoggedIn, setUserName }) => {
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
     const navigate = useNavigate();
+    const [cooldown, setCooldown] = useState(0);
+
+    useEffect(() => {
+        let timer;
+        if (cooldown > 0) {
+            timer = setTimeout(() => setCooldown(cooldown - 1), 1000);
+        }
+        return () => clearTimeout(timer);
+    }, [cooldown]);
 
     useEffect(() => {
         // URL'den email parametresini al
         const emailParam = searchParams.get('email');
-        if (emailParam) {
-            setEmail(emailParam);
+        if (emailParam) setEmail(emailParam);
+
+        // URL'den msg parametresini al
+        const msgParam = searchParams.get('msg');
+        if (msgParam) {
+            setError(msgParam);   // hata kutusu olarak göster
         }
     }, [searchParams]);
 
@@ -40,7 +53,7 @@ const EmailConfirmationPage = ({ setIsLoggedIn, setUserName }) => {
             console.log('E-posta doğrulama başarılı:', response);
 
             setSuccess('E-posta adresiniz başarıyla doğrulandı! Giriş yapabilirsiniz.');
-            
+
             // 2 saniye sonra login sayfasına yönlendir
             setTimeout(() => {
                 navigate('/login');
@@ -48,7 +61,7 @@ const EmailConfirmationPage = ({ setIsLoggedIn, setUserName }) => {
 
         } catch (err) {
             console.error('E-posta doğrulama sırasında hata:', err);
-            
+
             if (err.response) {
                 if (err.response.data && err.response.data.message) {
                     setError(err.response.data.message);
@@ -65,6 +78,7 @@ const EmailConfirmationPage = ({ setIsLoggedIn, setUserName }) => {
 
     const handleResendCode = async () => {
         setError('');
+        setSuccess('');
         setIsLoading(true);
 
         try {
@@ -72,8 +86,9 @@ const EmailConfirmationPage = ({ setIsLoggedIn, setUserName }) => {
                 email,
                 purpose: 'ConfirmEmail'
             });
-            
+
             setSuccess('Yeni doğrulama kodu e-posta adresinize gönderildi.');
+            setCooldown(60); // 60 saniye cooldown başlat
         } catch (err) {
             console.error('Kod yeniden gönderme hatası:', err);
             if (err.response && err.response.data && err.response.data.message) {
@@ -151,11 +166,10 @@ const EmailConfirmationPage = ({ setIsLoggedIn, setUserName }) => {
                         <button
                             type="submit"
                             disabled={isLoading}
-                            className={`w-full flex justify-center items-center px-4 py-3 border border-transparent text-base font-medium rounded-md text-white transition-transform transform hover:scale-105 ${
-                                isLoading
+                            className={`w-full flex justify-center items-center px-4 py-3 border border-transparent text-base font-medium rounded-md text-white transition-transform transform hover:scale-105 ${isLoading
                                     ? 'bg-gray-400 cursor-not-allowed'
                                     : 'bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600'
-                            }`}
+                                }`}
                         >
                             {isLoading ? (
                                 <>
@@ -175,10 +189,10 @@ const EmailConfirmationPage = ({ setIsLoggedIn, setUserName }) => {
                 <div className="text-center">
                     <button
                         onClick={handleResendCode}
-                        disabled={isLoading}
+                        disabled={isLoading || cooldown > 0}
                         className="text-sm text-blue-600 hover:text-blue-500 underline disabled:text-gray-400"
                     >
-                        Kod gelmedi mi? Yeniden gönder
+                        {cooldown > 0 ? `Tekrar göndermek için ${cooldown} sn bekleyin` : "Kod gelmedi mi? Yeniden gönder"}
                     </button>
                 </div>
 

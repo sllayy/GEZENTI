@@ -1,6 +1,7 @@
 ﻿import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { getApiUrl } from "../config/environment";
 
 const ForgotPasswordPage = () => {
     const [email, setEmail] = useState("");
@@ -16,7 +17,7 @@ const ForgotPasswordPage = () => {
         setMessage("");
 
         try {
-            const res = await axios.post("https://localhost:7248/api/auth/forgot-password", { email });
+            const res = await axios.post(`${getApiUrl()}/auth/forgot-password`, { email });
             setMessage(res.data.message || "Eğer kayıtlıysa mail gönderildi.");
             setStep(2); // kod gönderildikten sonra şifre sıfırlama adımına geç
         } catch (err) {
@@ -28,20 +29,28 @@ const ForgotPasswordPage = () => {
         e.preventDefault();
         setMessage("");
 
+        // Şifre kontrolü
         if (newPassword !== confirmPassword) {
             setMessage("Şifreler uyuşmuyor!");
             return;
         }
 
+        // Şifre validasyonu
+        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,12}$/;
+        if (!passwordRegex.test(newPassword)) {
+            setMessage("Şifre 8-12 karakter olmalı ve en az 1 büyük harf, 1 küçük harf, 1 rakam ve 1 sembol içermelidir.");
+            return;
+        }
+
         try {
-            const res = await axios.post("https://localhost:7248/api/auth/reset-password", {
+            const res = await axios.post(`${getApiUrl()}/auth/reset-password`, {
                 email,
                 code,
                 newPassword,
             });
             setMessage(res.data.message || "Şifre sıfırlandı ✅");
 
-            // 🔥 5 saniye sonra login sayfasına yönlendir
+            // 5 saniye sonra login sayfasına yönlendir
             setTimeout(() => {
                 navigate("/login");
             }, 5000);

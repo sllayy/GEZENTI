@@ -32,20 +32,23 @@ import ForgotPasswordPage from "./pages/ForgotPasswordPage.jsx";
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userName, setUserName] = useState("");
+  const [avatarIndex, setAvatarIndex] = useState(parseInt(localStorage.getItem("avatarIndex")) || 0);
+  const [loading, setLoading] = useState(true);
 
-  // Sayfa yüklendiğinde token kontrolü
-  useEffect(() => {
-    const token = localStorage.getItem("jwtToken");
-    if (token) {
-      setIsLoggedIn(true);
+    // ✅ Sayfa ilk açıldığında token kontrolü
+    useEffect(() => {
+        const token = localStorage.getItem("jwtToken");
+        if (token) {
+            setIsLoggedIn(true);
+            const savedUserName = localStorage.getItem("userName");
+            if (savedUserName) setUserName(savedUserName);
+        }
+        setLoading(false);  // ✅ kontrol bitti
+    }, []);
 
-      // Token varsa kullanıcı adını da localStorage'dan al
-      const savedUserName = localStorage.getItem("userName");
-      if (savedUserName) {
-        setUserName(savedUserName);
-      }
+    if (loading) {
+        return <div>Yükleniyor...</div>; // ya da spinner
     }
-  }, []);
 
   return (
     <Router>
@@ -55,6 +58,7 @@ function App() {
           isLoggedIn={isLoggedIn}
           setIsLoggedIn={setIsLoggedIn}
           userName={userName}
+          avatarIndex={avatarIndex}
         />
 
         <main className="flex-grow">
@@ -123,15 +127,22 @@ function App() {
                   <MapComponent />
                 </PrivateRoute>
               }
-            />
-            <Route
-              path="/profile"
-              element={
-                <PrivateRoute isLoggedIn={isLoggedIn}>
-                  <ProfilePage />
-                </PrivateRoute>
-              }
-            />
+                      />
+
+                      <Route
+                          path="/profile"
+                          element={
+                              <PrivateRoute isLoggedIn={isLoggedIn}>
+                                  <ProfilePage
+                                      avatarIndex={avatarIndex}
+                                      setAvatarIndex={setAvatarIndex}
+                                      setIsLoggedIn={setIsLoggedIn}
+                                      setUserName={setUserName}
+                                  />
+                              </PrivateRoute>
+                          }
+                      />
+             
             <Route
               path="/route-builder"
               element={

@@ -7,6 +7,7 @@ import { authAPI } from '../services/api';
 import { signInWithPopup } from "firebase/auth";
 import { auth, googleProvider } from "../config/firebase";
 import axios from "axios";
+import { getApiUrl } from "../config/environment";
 
 // Google ikonu için basit bir SVG bileşeni
 const GoogleIcon = () => (
@@ -29,13 +30,22 @@ const RegisterPage = ({ setIsLoggedIn, setUserName }) => {
         e.preventDefault();
         setError('');
         setIsLoading(true);
-        
+
         // Form doğrulaması
         if (!fullName || !email || !password) {
             setError("Lütfen tüm zorunlu alanları doldurun.");
             setIsLoading(false);
             return;
         }
+
+        // Şifre validasyon
+        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,12}$/;
+        if (!passwordRegex.test(password)) {
+            setError("Şifre 8-12 karakter olmalı ve en az 1 büyük harf, 1 küçük harf, 1 rakam ve 1 sembol içermelidir.");
+            setIsLoading(false);
+            return;
+        }
+
         if (password !== confirmPassword) {
             setError("Şifreler uyuşmuyor!");
             setIsLoading(false);
@@ -75,16 +85,23 @@ const RegisterPage = ({ setIsLoggedIn, setUserName }) => {
             // Başarılı kayıt sonrası işlemler - Kullanıcı henüz giriş yapmamış
             // E-posta doğrulama sayfasına yönlendir
             navigate(`/confirm-email?email=${encodeURIComponent(email)}`);
-            
+
         } catch (err) {
             console.error('Kayıt işlemi sırasında hata:', err);
-            
+
             if (err.response) {
+                const msg = err.response.data?.message;
+
+                if (msg && msg.includes("doğrulanmamış")) {
+                    // ✅ Direkt confirm-email sayfasına yönlendir
+                    navigate(`/confirm-email?email=${encodeURIComponent(email)}&msg=${encodeURIComponent(msg)}`);
+                    return; // burada fonksiyonu bitiriyoruz
+                }
+
                 if (err.response.status === 400) {
-                    if (err.response.data.message) {
-                        setError(err.response.data.message);
+                    if (msg) {
+                        setError(msg);
                     } else if (err.response.data.errors) {
-                        // Validation hatalarını birleştir
                         const errorMessages = Object.values(err.response.data.errors).flat();
                         setError(errorMessages.join(', '));
                     } else {
@@ -111,7 +128,7 @@ const RegisterPage = ({ setIsLoggedIn, setUserName }) => {
             console.log("🔥 Firebase ID Token:", idToken);
 
             // 3. Backend'e gönder
-            const r = await axios.post("https://localhost:7248/api/auth/google-firebase", { idToken });
+            const r = await axios.post(`${getApiUrl()}/auth/google-firebase`, { idToken });
             console.log("✅ Backend cevabı:", r.data);
 
             // 4. JWT kaydet
@@ -133,7 +150,7 @@ const RegisterPage = ({ setIsLoggedIn, setUserName }) => {
 
     return (
         <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-teal-50 via-cyan-50 to-blue-100 p-4 font-sans">
-            
+
             <div className="text-center mb-8">
                 <img src="/LOGO2.png" alt="Gezenti Logo" className="h-16 w-16 mx-auto mb-4 rounded-full shadow-lg" />
                 <h1 className="text-4xl font-bold text-gray-800">
@@ -148,7 +165,7 @@ const RegisterPage = ({ setIsLoggedIn, setUserName }) => {
                 <div className="text-center">
                     <h2 className="text-2xl font-bold text-gray-900">Hesap Oluştur</h2>
                     <p className="mt-1 text-sm text-gray-500">
-                       Bilgilerinizi girerek hızlıca kaydolun
+                        Bilgilerinizi girerek hızlıca kaydolun
                     </p>
                 </div>
 
@@ -157,26 +174,26 @@ const RegisterPage = ({ setIsLoggedIn, setUserName }) => {
                         {error}
                     </div>
                 )}
-                
+
                 <form className="space-y-4" onSubmit={handleRegister}>
                     <div>
                         <label htmlFor="fullName" className="text-sm font-medium text-gray-700">Ad Soyad</label>
-                        <InputText id="fullName" value={fullName} onChange={(e) => setFullName(e.target.value)} className="w-full mt-1 p-inputtext-lg" placeholder="Adınız Soyadınız"/>
+                        <InputText id="fullName" value={fullName} onChange={(e) => setFullName(e.target.value)} className="w-full mt-1 p-inputtext-lg" placeholder="Adınız Soyadınız" />
                     </div>
-                    
+
                     <div>
                         <label htmlFor="email" className="text-sm font-medium text-gray-700">E-posta</label>
-                        <InputText id="email" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full mt-1 p-inputtext-lg" placeholder="ornek@email.com"/>
+                        <InputText id="email" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full mt-1 p-inputtext-lg" placeholder="ornek@email.com" />
                     </div>
 
                     <div>
                         <label htmlFor="password" className="text-sm font-medium text-gray-700">Şifre</label>
-                        <Password inputId="password" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full mt-1" inputClassName="w-full p-inputtext-lg" placeholder="********" feedback={false} toggleMask/>
+                        <Password inputId="password" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full mt-1" inputClassName="w-full p-inputtext-lg" placeholder="********" feedback={false} toggleMask />
                     </div>
 
-                     <div>
+                    <div>
                         <label htmlFor="confirmPassword" className="text-sm font-medium text-gray-700">Şifre Tekrar</label>
-                        <Password inputId="confirmPassword" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} className="w-full mt-1" inputClassName="w-full p-inputtext-lg" placeholder="********" feedback={false} toggleMask/>
+                        <Password inputId="confirmPassword" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} className="w-full mt-1" inputClassName="w-full p-inputtext-lg" placeholder="********" feedback={false} toggleMask />
                     </div>
 
                     <div className="flex items-start pt-2">
@@ -189,16 +206,15 @@ const RegisterPage = ({ setIsLoggedIn, setUserName }) => {
                             </label>
                         </div>
                     </div>
-                    
+
                     <div className="pt-2">
-                         <button 
-                            type="submit" 
+                        <button
+                            type="submit"
                             disabled={isLoading}
-                            className={`w-full flex justify-center items-center px-4 py-3 border border-transparent text-base font-medium rounded-md text-white transition-transform transform hover:scale-105 ${
-                                isLoading 
-                                    ? 'bg-gray-400 cursor-not-allowed' 
+                            className={`w-full flex justify-center items-center px-4 py-3 border border-transparent text-base font-medium rounded-md text-white transition-transform transform hover:scale-105 ${isLoading
+                                    ? 'bg-gray-400 cursor-not-allowed'
                                     : 'bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600'
-                            }`}
+                                }`}
                         >
                             {isLoading ? (
                                 <>

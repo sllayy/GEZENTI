@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
-// Firebase importları 🔝 burada olmalı
 import { signInWithPopup } from "firebase/auth";
 import { auth, googleProvider } from "../config/firebase";
+import { getApiUrl } from "../config/environment";
 
 
 // Input bileşenleri
@@ -81,8 +81,13 @@ const LoginPage = ({ setIsLoggedIn, setUserName }) => {
         e.preventDefault();
         setError("");
 
+        if (!email || !password) {
+            setError("E-posta ve şifre alanları boş bırakılamaz.");
+            return;
+        }
+
         try {
-            const response = await axios.post("https://localhost:7248/api/Auth/login", {
+            const response = await axios.post(`${getApiUrl()}/Auth/login`, {
                 email,
                 password,
             });
@@ -125,7 +130,7 @@ const LoginPage = ({ setIsLoggedIn, setUserName }) => {
             const idToken = await result.user.getIdToken();
             console.log("🔥 Firebase ID Token:", idToken);
 
-            const r = await axios.post("https://localhost:7248/api/auth/google-firebase", { idToken });
+            const r = await axios.post(`${getApiUrl()}/auth/google-firebase`, { idToken });
             console.log("✅ Backend cevabı:", r.data);
 
             const token = r.data?.token;
@@ -164,6 +169,12 @@ const LoginPage = ({ setIsLoggedIn, setUserName }) => {
                     </p>
                 </div>
 
+                {error && (
+                    <div className="p-3 mb-4 text-sm rounded bg-red-100 text-red-700">
+                        {error}
+                    </div>
+                )}
+
                 <form className="space-y-6" onSubmit={handleLogin}>
                     <div>
                         <label htmlFor="email" className="text-sm font-medium text-gray-700">
@@ -198,7 +209,7 @@ const LoginPage = ({ setIsLoggedIn, setUserName }) => {
                         <div className="flex items-center">
                             <Checkbox
                                 inputId="rememberMe"
-                                onChange={(e) => setChecked(e.checked)}
+                                onChange={(e) => setChecked(e.target.checked)}
                                 checked={checked}
                             />
                             <label htmlFor="rememberMe" className="ml-2 text-gray-600 cursor-pointer">

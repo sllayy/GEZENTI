@@ -11,15 +11,15 @@ const getEnvironmentConfig = () => {
   if (apiUrl) {
     return {
       apiUrl,
-      backendPort: backendPort || '5136',
+      backendPort: backendPort || '7248',
       frontendPort: frontendPort || '3000'
     };
   }
 
   // Varsayılan yapılandırma (herkes kendi portunu burada değiştirebilir)
   const defaultConfig = {
-    apiUrl: 'http://localhost:5136/api',
-    backendPort: '5136',
+    apiUrl: 'http://localhost:7248/api',
+    backendPort: '7248',
     frontendPort: '3000'
   };
 

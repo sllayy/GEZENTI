@@ -39,8 +39,28 @@ namespace GeziRotasi.Controllers
         {
             var exists = await _users.FindByEmailAsync(dto.Email);
             if (exists is not null)
-                return BadRequest(new { message = "Bu e-posta zaten kayıtlı." });
+            {
+                if (!exists.EmailConfirmed)
+                {
+                    // Kullanıcı var ama e-posta doğrulanmamış → yeni doğrulama kodu yolla
+                    await _codes.CreateAndSendAsync(
+                        exists,
+                        CodePurpose.ConfirmEmail,
+                        TimeSpan.FromMinutes(15),
+                        code => $"<p>Doğrulama kodunuz: <b>{code}</b></p><p>15 dakika içinde kullanın.</p>"
+                    );
 
+                    return BadRequest(new
+                    {
+                        message = "Bu e-posta zaten kayıtlı ancak doğrulanmamış. Yeni doğrulama kodu gönderildi."
+                    });
+                }
+
+                // Kullanıcı var ve doğrulanmış → klasik hata mesajı
+                return BadRequest(new { message = "Bu e-posta zaten kayıtlı." });
+            }
+
+            // Yeni kullanıcı oluştur
             var user = new AppUser
             {
                 UserName = dto.Email,
@@ -50,11 +70,16 @@ namespace GeziRotasi.Controllers
             };
 
             var res = await _users.CreateAsync(user, dto.Password);
-            if (!res.Succeeded) return BadRequest(new { errors = res.Errors });
+            if (!res.Succeeded)
+                return BadRequest(new { errors = res.Errors });
 
             // doğrulama kodu oluşturup e-posta gönder
-            await _codes.CreateAndSendAsync(user, CodePurpose.ConfirmEmail, TimeSpan.FromMinutes(15),
-                code => $"<p>Doğrulama kodunuz: <b>{code}</b></p><p>15 dakika içinde kullanın.</p>");
+            await _codes.CreateAndSendAsync(
+                user,
+                CodePurpose.ConfirmEmail,
+                TimeSpan.FromMinutes(15),
+                code => $"<p>Doğrulama kodunuz: <b>{code}</b></p><p>15 dakika içinde kullanın.</p>"
+            );
 
             return Ok(new { message = "Kayıt oluşturuldu. E-posta doğrulama kodu gönderildi." });
         }
@@ -90,16 +115,25 @@ namespace GeziRotasi.Controllers
             return Ok(new { message = "E-posta doğrulandı." });
         }
 
-        // POST api/auth/resend-code
         [HttpPost("resend-code")]
         public async Task<IActionResult> ResendCode(ResendCodeDto dto)
         {
             var user = await _users.FindByEmailAsync(dto.Email);
             if (user == null) return BadRequest(new { message = "Kullanıcı bulunamadı." });
 
-            CodePurpose purpose;
-            if (!Enum.TryParse(dto.Purpose, out purpose))
+            if (!Enum.TryParse(dto.Purpose, out CodePurpose purpose))
                 return BadRequest(new { message = "Geçersiz kod amacı." });
+
+            //Rate limit kontrolü
+            var lastCode = await _db.EmailCodes
+                .Where(c => c.UserId == user.Id && c.Purpose == purpose)
+                .OrderByDescending(c => c.CreatedAtUtc)
+                .FirstOrDefaultAsync();
+
+            if (lastCode != null && (DateTime.UtcNow - lastCode.CreatedAtUtc).TotalSeconds < 60)
+            {
+                return BadRequest(new { message = "Kod çok sık isteniyor. Lütfen 1 dakika bekleyin." });
+            }
 
             try
             {
@@ -249,7 +283,7 @@ namespace GeziRotasi.Controllers
         public async Task<ActionResult<MeDto>> Me()
         {
             var user = await _users.GetUserAsync(User);
-            return new MeDto { Id = user!.Id.ToString(), FirstName = user.FirstName, LastName = user.LastName, Email = user.Email! };
+            return new MeDto { Id = user!.Id.ToString(), FirstName = user.FirstName, LastName = user.LastName, Email = user.Email!, AvatarIndex = user.AvatarIndex, AboutMe = user.AboutMe };
         }
 
         // alias: /api/account/me (aynı işi yapıyormuş)
@@ -296,11 +330,13 @@ namespace GeziRotasi.Controllers
 
             user.FirstName = (dto.FirstName ?? "").Trim();
             user.LastName = (dto.LastName ?? "").Trim();
+            user.AvatarIndex = dto.AvatarIndex;
+            user.AboutMe = dto.AboutMe;
 
             var res = await _users.UpdateAsync(user);
             if (!res.Succeeded) return BadRequest(new { errors = res.Errors });
 
-            return new MeDto { Id = user.Id.ToString(), FirstName = user.FirstName, LastName = user.LastName, Email = user.Email! };
+            return new MeDto { Id = user.Id.ToString(), FirstName = user.FirstName, LastName = user.LastName, Email = user.Email!, AvatarIndex = user.AvatarIndex, AboutMe = user.AboutMe };
         }
 
         // POST api/auth/reset-password

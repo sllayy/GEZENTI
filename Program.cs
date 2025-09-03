@@ -87,6 +87,11 @@ builder.Services.AddAuthentication(opt =>
     };
 });
 
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.Limits.MaxRequestHeadersTotalSize = 32768; // 32 KB
+});
+
 // ----------------------
 // 6. CORS (React için)
 // ----------------------
