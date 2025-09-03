@@ -34,17 +34,19 @@ namespace GeziRotasi.API.Controllers
                 return ValidationProblem(ModelState);
             }
 
-            // --- Güvenlik kontrolü: token'daki userId ile request içindeki userId eşleşmeli ---
+
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (request.UserId.ToString() != currentUserId)
+
+            if (string.IsNullOrEmpty(currentUserId))
             {
-                return Forbid("Bu kullanıcı adına işlem yapma yetkiniz yok.");
+                return Unauthorized("Kullanıcı kimliği bulunamadı.");
             }
 
-            var result = await _routeService.GetOptimizedRouteAsync(request, ct);
 
+            var result = await _routeService.GetOptimizedRouteAsync(request, ct);
             return Ok(result);
         }
+
 
         /// <summary>
         /// Kullanıcının oluşturulan rota için verdiği puan ve yorumu alır.

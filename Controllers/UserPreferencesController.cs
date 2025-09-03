@@ -16,15 +16,6 @@ namespace GeziRotasi.API.Controllers
             _service = service;
         }
 
-        // Kullanıcıya ait tercihleri getir
-        [HttpGet("{userId}")]
-        public async Task<ActionResult<UserPreferences>> Get(int userId)
-        {
-            var prefs = await _service.GetByUserIdAsync(userId);
-            if (prefs == null) return NotFound();
-            return Ok(prefs);
-        }
-
         // Kullanıcı tercihlerini kaydet/güncelle
         [HttpPost]
         public async Task<ActionResult<UserPreferences>> Save(UserPreferencesDto dto)

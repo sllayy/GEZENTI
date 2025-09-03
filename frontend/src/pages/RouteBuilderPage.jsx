@@ -70,11 +70,9 @@ const RouteBuilderPage = () => {
             setIsCreatingRoute(true);
 
             // 🔹 Mevcut kullanıcıyı al (şimdilik localStorage)
-            const userId = localStorage.getItem('userId') || 1;
 
             // --- UserPreferences backend’e kaydet ---
             const prefsPayload = {
-                userId,
                 crowdednessPreference: crowdPreference,
                 maxWalkDistance,
                 preferredThemes: selectedCategories,
@@ -90,6 +88,7 @@ const RouteBuilderPage = () => {
 
             // --- Rota isteği ---
             const payload = {
+                
                 mode: transportType === 'walking' ? 'foot' : 'driving',
                 coordinates: [startCoords, endCoords],
                 optimizeOrder: shortestRoute,
@@ -98,7 +97,6 @@ const RouteBuilderPage = () => {
                 geoJson: true,
                 snapToNetwork: true,
                 preference: shortestRoute ? 'shortest' : 'fastest',
-                userId,
                 minStartTimeHour: timeRange[0],
                 maxEndTimeHour: timeRange[1],
                 totalAvailableMinutes: (timeRange[1] - timeRange[0]) * 60

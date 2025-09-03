@@ -53,7 +53,7 @@ namespace GeziRotasi.API.Services
                 );
             }
 
-            // Sıralama
+            // --- Sıralama ---
             if (!string.IsNullOrWhiteSpace(sortBy))
             {
                 bool isDescending = sortDirection?.Equals("desc", StringComparison.OrdinalIgnoreCase) ?? false;
@@ -61,17 +61,30 @@ namespace GeziRotasi.API.Services
                 switch (sortBy.ToLower())
                 {
                     case "name":
-                        query = isDescending ? query.OrderByDescending(p => p.Name) : query.OrderBy(p => p.Name);
-                        break;
-                    case "category":
-                        query = isDescending ? query.OrderByDescending(p => p.Category) : query.OrderBy(p => p.Category);
-                        break;
-                    case "populer":
-                        // Null güvenliği eklendi ✅
                         query = isDescending
-                            ? query.OrderByDescending(p => (int?)(p.Reviews != null ? p.Reviews.Count() : 0) ?? 0)
-                            : query.OrderBy(p => (int?)(p.Reviews != null ? p.Reviews.Count() : 0) ?? 0);
+                            ? query.OrderByDescending(p => p.Name)
+                            : query.OrderBy(p => p.Name);
                         break;
+
+                    case "category":
+                        query = isDescending
+                            ? query.OrderByDescending(p => p.Category)
+                            : query.OrderBy(p => p.Category);
+                        break;
+
+                    case "populer":
+                        // EF Core çevirilebilir hale getirildi ✅
+                        query = isDescending
+                            ? query
+                                .Select(p => new { Poi = p, ReviewCount = p.Reviews.Count })
+                                .OrderByDescending(x => x.ReviewCount)
+                                .Select(x => x.Poi)
+                            : query
+                                .Select(p => new { Poi = p, ReviewCount = p.Reviews.Count })
+                                .OrderBy(x => x.ReviewCount)
+                                .Select(x => x.Poi);
+                        break;
+
                     default:
                         query = query.OrderBy(p => p.Name);
                         break;
