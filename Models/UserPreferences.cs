@@ -1,83 +1,76 @@
-using System.ComponentModel.DataAnnotations; // 'Key' niteliğini kullanmak için gerekli.
-using System.Collections.Generic; // Listeler gibi koleksiyonları kullanmak için gerekli, her ne kadar burada string olarak saklasak da.
+using System.ComponentModel.DataAnnotations;
 
-/// <summary>
-/// Uygulama kullanıcılarının kişiselleştirilmiş gezi rotası tercihlerini veritabanında saklamak için kullanılan veri modelidir.
-/// Bu sınıf, veritabanında 'UserPreferences' adında bir tabloya karşılık gelecektir.
-/// </summary>
-public class UserPreferences
+namespace GeziRotasi.API.Models
 {
     /// <summary>
-    /// Bu tercih setinin veritabanındaki benzersiz kimliği (Primary Key).
-    /// Her yeni tercih kaydı için otomatik olarak artan bir sayı atanır.
+    /// Uygulama kullanıcılarının kişiselleştirilmiş gezi rotası tercihlerini veritabanında saklayan entity.
+    /// Bu sınıf, veritabanında 'UserPreferences' tablosuna karşılık gelir.
     /// </summary>
-    [Key] // Bu özelliğin veritabanında birincil anahtar olduğunu belirtir.
-    public int Id { get; set; }
+    public class UserPreferences
+    {
+        /// <summary>
+        /// Tercih kaydının benzersiz kimliği (Primary Key).
+        /// Veritabanında otomatik artan olarak atanır.
+        /// </summary>
+        [Key]
+        public int Id { get; set; }
 
-    /// <summary>
-    /// Bu tercihlerin hangi kullanıcıya ait olduğunu gösteren kullanıcı kimliği.
-    /// Kullanıcı oturum açtığında JWT token'ından alınacak ve buraya kaydedilecektir.
-    /// </summary>
-    public int UserId { get; set; }
+        /// <summary>
+        /// Tercihlerin hangi kullanıcıya ait olduğunu belirten kullanıcı kimliği.
+        /// </summary>
+        public int UserId { get; set; }
 
+        /// <summary>
+        /// Kullanıcının kalabalık ortamlar için tercihi.
+        /// 0 = hiç önemli değil, 5 = çok önemli.
+        /// </summary>
+        public int CrowdednessPreference { get; set; }
 
-    /// <summary>
-    /// Kullanıcının gezi rotası için tercih ettiği kalabalık düzeyi.
-    /// Örneğin: 0 = Az kalabalık, 1 = Orta, 2 = Kalabalık.
-    /// </summary>
-    public int CrowdednessPreference { get; set; }
+        /// <summary>
+        /// Yürüyüş modunda kabul edilebilecek maksimum mesafe (metre cinsinden).
+        /// </summary>
+        public int MaxWalkDistance { get; set; }
 
-    /// <summary>
-    /// Kullanıcının "Yürüyüş" ulaşım modu seçeneğinde kabul edebileceği maksimum yürüme mesafesi (metre cinsinden).
-    /// Frontend'deki "Yürüyüş" seçeneği ile ilişkili olacak.
-    /// </summary>
-    public int MaxWalkDistance { get; set; }
+        /// <summary>
+        /// Kullanıcının seçtiği ilgi alanı temalarının virgülle ayrılmış hali.
+        /// Örn: "Sanat,Tarih,Yemek".
+        /// </summary>
+        public string PreferredThemes { get; set; } = string.Empty;
 
-    /// <summary>
-    /// Kullanıcının seçtiği ilgi alanı temalarının virgülle ayrılmış bir listesi (örn: "Sanat,Tarih,Yemek").
-    /// Frontend'deki "Kategori Seçimi" kısmından gelir. Veritabanında tek bir string olarak saklanır.
-    /// </summary>
-    public string PreferredThemes { get; set; } = string.Empty; // Boş olmaması için varsayılan değer atanır.
+        /// <summary>
+        /// Kullanıcının tercih ettiği ulaşım modu.
+        /// Örn: "Yürüyüş", "Bisiklet", "Araç", "Toplu Taşıma".
+        /// </summary>
+        public string PreferredTransportationMode { get; set; } = string.Empty;
 
-    /// <summary>
-    /// Kullanıcının gezi rotası için tercih ettiği ulaşım modu (örn: "Yürüyüş", "Bisiklet", "Araç", "Toplu Taşıma").
-    /// Frontend'deki "Ulaşım Türü" kısmından gelir.
-    /// </summary>
-    public string PreferredTransportationMode { get; set; } = string.Empty; // Boş olmaması için varsayılan değer atanır.
+        /// <summary>
+        /// Kullanıcının rotası için istediği minimum başlangıç saati (örn: 8 = sabah 08:00).
+        /// </summary>
+        public int MinStartTimeHour { get; set; }
 
-    /// <summary>
-    /// Kullanıcının rotası için istediği minimum başlangıç saati (örneğin: 8 = sabah 08:00).
-    /// Frontend'deki "Zaman Aralığı" kısmının başlangıcı.
-    /// </summary>
-    public int MinStartTimeHour { get; set; }
+        /// <summary>
+        /// Kullanıcının rotası için istediği maksimum bitiş saati (örn: 18 = akşam 18:00).
+        /// </summary>
+        public int MaxEndTimeHour { get; set; }
 
-    /// <summary>
-    /// Kullanıcının rotası için istediği maksimum bitiş saati (örneğin: 18 = akşam 18:00).
-    /// Frontend'deki "Zaman Aralığı" kısmının bitişi.
-    /// </summary>
-    public int MaxEndTimeHour { get; set; }
+        /// <summary>
+        /// Rota içine dahil edilecek POI’lerin sahip olması gereken minimum puan.
+        /// </summary>
+        public double MinPoiRating { get; set; }
 
-    /// <summary>
-    /// Kullanıcının rotasına dahil edilecek ilgi çekici noktaların (POI) sahip olması gereken minimum puan.
-    /// Bu, rotanın kalitesini etkileyen bir filtre olabilir.
-    /// </summary>
-    public double MinPoiRating { get; set; }
+        /// <summary>
+        /// Trafik durumunun dikkate alınıp alınmadığını belirtir.
+        /// </summary>
+        public bool ConsiderTraffic { get; set; }
 
-    /// <summary>
-    /// Kullanıcının trafik durumunun dikkate alınıp alınmadığı tercihi.
-    /// Frontend'deki "Trafik durumunu dikkate al" onay kutusuna karşılık gelir.
-    /// </summary>
-    public bool ConsiderTraffic { get; set; }
+        /// <summary>
+        /// En kısa rotanın öncelikli olup olmadığını belirtir.
+        /// </summary>
+        public bool PrioritizeShortestRoute { get; set; }
 
-    /// <summary>
-    /// Kullanıcının en kısa rotanın öncelikli olup olmadığı tercihi.
-    /// Frontend'deki "En kısa rotayı öncelikle" onay kutusuna karşılık gelir.
-    /// </summary>
-    public bool PrioritizeShortestRoute { get; set; }
-
-    /// <summary>
-    /// Kullanıcının engelli erişiminin dikkate alınıp alınmadığı tercihi.
-    /// Frontend'deki "Engelli erişimi" onay kutusuna karşılık gelir.
-    /// </summary>
-    public bool AccessibilityFriendly { get; set; }
+        /// <summary>
+        /// Engelli erişiminin dikkate alınıp alınmadığını belirtir.
+        /// </summary>
+        public bool AccessibilityFriendly { get; set; }
+    }
 }

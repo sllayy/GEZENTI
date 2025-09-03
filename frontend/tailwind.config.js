@@ -1,8 +1,8 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  darkMode: "class", // ✅ Dark mode'u class tabanlı aktif ettik
+  darkMode: ["class"],
   content: [
-    "./src/**/*.{js,jsx,ts,tsx}", // Projenin JS/TS/React dosyaları
+    "./src/**/*.{js,jsx,ts,tsx}", // Bu satır sizin projenize göre zaten doğrudur.
   ],
   prefix: "",
   theme: {
@@ -14,8 +14,9 @@ module.exports = {
       },
     },
     extend: {
+      // EN ÖNEMLİ BÖLÜM BURASI
       colors: {
-        border: "hsl(var(--border))",
+        border: "hsl(var(--border))", // Hatanın kaynağı olan 'border' rengi burada tanımlanıyor.
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
         background: "hsl(var(--background))",
@@ -70,5 +71,6 @@ module.exports = {
       },
     },
   },
+  // Bu eklenti animasyonlar için gereklidir.
   plugins: [require("tailwindcss-animate")],
-};
+}

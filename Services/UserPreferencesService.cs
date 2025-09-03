@@ -29,16 +29,26 @@ namespace GeziRotasi.API.Services
 
             if (existing == null)
             {
+                // Yeni kayıt ekle
                 _db.UserPreferences.Add(prefs);
             }
             else
             {
-                // Budget alanı kaldırıldığı için sadece diğer alanları güncelle
-                _db.Entry(existing).CurrentValues.SetValues(prefs);
+                // Sadece güncellenebilir alanları güncelle
+                existing.CrowdednessPreference = prefs.CrowdednessPreference;
+                existing.MaxWalkDistance = prefs.MaxWalkDistance;
+                existing.PreferredThemes = prefs.PreferredThemes;
+                existing.PreferredTransportationMode = prefs.PreferredTransportationMode;
+                existing.MinStartTimeHour = prefs.MinStartTimeHour;
+                existing.MaxEndTimeHour = prefs.MaxEndTimeHour;
+                existing.MinPoiRating = prefs.MinPoiRating;
+                existing.ConsiderTraffic = prefs.ConsiderTraffic;
+                existing.PrioritizeShortestRoute = prefs.PrioritizeShortestRoute;
+                existing.AccessibilityFriendly = prefs.AccessibilityFriendly;
             }
 
             await _db.SaveChangesAsync();
-            return prefs;
+            return existing ?? prefs;
         }
     }
 }
