@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace GeziRotasi.API.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250902180337_FixTravelRoutesPrimaryKey")]
-    partial class FixTravelRoutesPrimaryKey
+    [Migration("20250903062931_yeni")]
+    partial class yeni
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
