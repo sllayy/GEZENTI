@@ -78,14 +78,14 @@ namespace GeziRotasi.Controllers
             try
             {
                 var when = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm 'UTC'");
-                await _email.SendAsync(user.Email!, "Kaydınız başarıyla oluşturuldu.",
+                await _email.SendEmailAsync(user.Email!, "Kaydınız başarıyla oluşturuldu.",
                     $@"<p>Merhaba {user.FirstName},</p>
                <p>E-posta adresiniz <b>başarıyla doğrulandı</b>.</p>
                <p><b>Gezenti ile keşfetmeye başlayın.</b>.</p>
                <p>Tarih: {when}</p>");
             }
 
-            catch {  }
+            catch { }
 
             return Ok(new { message = "E-posta doğrulandı." });
         }
@@ -146,7 +146,7 @@ namespace GeziRotasi.Controllers
                 }
                 catch (Exception)
                 {
-                    
+
                 }
 
                 return StatusCode(423, new { message = "Hesabınız kilitlendi. E-postaya gelen kodla açın." });
@@ -172,7 +172,7 @@ namespace GeziRotasi.Controllers
 
         // POST api/auth/unlock-account
         [HttpPost("unlock-account")]
-        public async Task<IActionResult> UnlockAccount(ConfirmEmailDto dto)  
+        public async Task<IActionResult> UnlockAccount(ConfirmEmailDto dto)
         {
             var user = await _users.FindByEmailAsync(dto.Email);
             if (user == null) return BadRequest(new { message = "Kullanıcı bulunamadı." });
@@ -235,7 +235,7 @@ namespace GeziRotasi.Controllers
             }
 
             var when = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm 'UTC'");
-            await _email.SendAsync(user!.Email!, "Şifreniz Değiştirildi",
+            await _email.SendEmailAsync(user!.Email!, "Şifreniz Değiştirildi",
                 $"<p>Merhaba {user.FirstName},</p>" +
                 $"<p>Hesabınızın şifresi <b>{when}</b> tarihinde değiştirildi.</p>" +
                 $"<p>Bu işlemi siz yapmadıysanız hemen şifrenizi sıfırlayın.</p>");
@@ -351,13 +351,13 @@ namespace GeziRotasi.Controllers
             }
 
             var when = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm 'UTC'");
-            await _email.SendAsync(user.Email!, "Şifreniz Sıfırlandı",
+            await _email.SendEmailAsync(user.Email!, "Şifreniz Sıfırlandı",
                 $"<p>Merhaba {user.FirstName},</p>" +
                 $"<p>Hesabınızın şifresi <b>{when}</b> tarihinde sıfırlandı.</p>" +
                 $"<p>Bu işlemi siz yapmadıysanız lütfen destek ile iletişime geçin.</p>");
 
             return Ok(new { message = "Şifre sıfırlandı." });
-            }
+        }
 
         // POST api/auth/google-firebase
         [HttpPost("google-firebase")]

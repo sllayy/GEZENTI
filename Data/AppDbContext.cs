@@ -1,8 +1,10 @@
 using GeziRotasi.API.Models;
+using GeziRotasi.API.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using GeziRotasi.API.Entities;
+using GeziRotasi.API.Domain.Categories;
 
 namespace GeziRotasi.API.Data
 {
@@ -23,6 +25,7 @@ namespace GeziRotasi.API.Data
         public DbSet<Poi> Pois { get; set; }
         public DbSet<WorkingHour> WorkingHours { get; set; }
         public DbSet<SpecialDayHour> SpecialDayHours { get; set; }
+        public DbSet<Category> Categories { get; set; }
 
         // -------------------
         // PUANLAMA & KULLANICI TERCİHLERİ
@@ -75,8 +78,21 @@ namespace GeziRotasi.API.Data
             {
                 e.ToTable("TravelRoutes");
                 e.HasKey(x => x.Id).HasName("PK_TravelRoutes"); // Özel PK adı
+
+                // ---- Category Seed ----
+                modelBuilder.Entity<Category>().HasData(
+                    new Category { Id = 1, Name = "Alışveriş", Path = "/images/categories/alisveris.png", Depth = 0 },
+                    new Category { Id = 2, Name = "Eğlence", Path = "/images/categories/eglence.png", Depth = 0 },
+                    new Category { Id = 3, Name = "Karayolu", Path = "/images/categories/karayolu.png", Depth = 0 },
+                    new Category { Id = 4, Name = "Kültür", Path = "/images/categories/kultur.png", Depth = 0 },
+                    new Category { Id = 5, Name = "KültürelTesisler", Path = "/images/categories/kulturel.png", Depth = 0 },
+                    new Category { Id = 6, Name = "OnemliNoktalar", Path = "/images/categories/onemli.png", Depth = 0 },
+                    new Category { Id = 7, Name = "TarihiTuristikTesisler", Path = "/images/categories/tarihi.png", Depth = 0 },
+                    new Category { Id = 8, Name = "Yemek", Path = "/images/categories/yemek.png", Depth = 0 }
+                );
             });
         }
+
 
         public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {

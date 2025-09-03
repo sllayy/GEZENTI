@@ -3,6 +3,7 @@ using System;
 using GeziRotasi.API.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace GeziRotasi.API.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250903084848_AddCategoryTable")]
+    partial class AddCategoryTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -48,72 +51,6 @@ namespace GeziRotasi.API.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Categories");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Depth = 0,
-                            Name = "Alışveriş",
-                            Path = "/images/categories/alisveris.png",
-                            Slug = ""
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Depth = 0,
-                            Name = "Eğlence",
-                            Path = "/images/categories/eglence.png",
-                            Slug = ""
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Depth = 0,
-                            Name = "Karayolu",
-                            Path = "/images/categories/karayolu.png",
-                            Slug = ""
-                        },
-                        new
-                        {
-                            Id = 4,
-                            Depth = 0,
-                            Name = "Kültür",
-                            Path = "/images/categories/kultur.png",
-                            Slug = ""
-                        },
-                        new
-                        {
-                            Id = 5,
-                            Depth = 0,
-                            Name = "KültürelTesisler",
-                            Path = "/images/categories/kulturel.png",
-                            Slug = ""
-                        },
-                        new
-                        {
-                            Id = 6,
-                            Depth = 0,
-                            Name = "OnemliNoktalar",
-                            Path = "/images/categories/onemli.png",
-                            Slug = ""
-                        },
-                        new
-                        {
-                            Id = 7,
-                            Depth = 0,
-                            Name = "TarihiTuristikTesisler",
-                            Path = "/images/categories/tarihi.png",
-                            Slug = ""
-                        },
-                        new
-                        {
-                            Id = 8,
-                            Depth = 0,
-                            Name = "Yemek",
-                            Path = "/images/categories/yemek.png",
-                            Slug = ""
-                        });
                 });
 
             modelBuilder.Entity("GeziRotasi.API.Entities.AppUser", b =>
@@ -458,9 +395,6 @@ namespace GeziRotasi.API.Migrations
                         .HasName("PK_TravelRoutes");
 
                     b.ToTable("TravelRoutes", (string)null);
-                    b.HasKey("Id");
-
-                    b.ToTable("TravelRoutes");
                 });
 
             modelBuilder.Entity("GeziRotasi.API.Models.UserPreferences", b =>

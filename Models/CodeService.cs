@@ -10,7 +10,7 @@ namespace GeziRotasi.API.Services
     public interface ICodeService
     {
         Task<string> CreateAndSendAsync(AppUser user, CodePurpose purpose, TimeSpan lifetime, Func<string, string> bodyFactory);
-        Task<bool> ValidateAsync(int userId, CodePurpose purpose, string code); // <-- int!
+        Task<bool> ValidateAsync(int userId, CodePurpose purpose, string code);
     }
 
     public class CodeService : ICodeService
@@ -20,14 +20,15 @@ namespace GeziRotasi.API.Services
 
         public CodeService(AppDbContext db, IEmailSender email)
         {
-            _db = db; _email = email;
+            _db = db;
+            _email = email;
         }
 
-        // 6 haneli kod
+        // 6 haneli kod üret
         private static string Generate6Digit() =>
             RandomNumberGenerator.GetInt32(100000, 999999).ToString();
 
-        // SHA-256 hash
+        // SHA-256 hash fonksiyonu
         private static string Hash(string code)
         {
             using var sha = SHA256.Create();
@@ -47,9 +48,15 @@ namespace GeziRotasi.API.Services
                 .Where(x => x.UserId == user.Id && x.Purpose == purpose && !x.Used && x.ExpiresAtUtc > now)
                 .ToListAsync();
 
-            if (olds.Count > 0)
-                foreach (var x in olds) x.Used = true;
+            if (olds.Any())
+            {
+                foreach (var old in olds)
+                {
+                    old.Used = true;
+                }
+            }
 
+            // Yeni kod üret
             var code = Generate6Digit();
 
             _db.EmailCodes.Add(new EmailCode
@@ -63,6 +70,7 @@ namespace GeziRotasi.API.Services
 
             await _db.SaveChangesAsync();
 
+            // Mail konusu
             var subject = purpose switch
             {
                 CodePurpose.ConfirmEmail => "E-posta Doğrulama Kodu",
@@ -71,8 +79,12 @@ namespace GeziRotasi.API.Services
                 _ => "Doğrulama Kodu"
             };
 
-            await _email.SendAsync(user.Email!, subject, bodyFactory(code));
-            return code; // istersen loglayabilirsin/testte kullanırsın
+            if (!string.IsNullOrEmpty(user.Email))
+            {
+                await _email.SendEmailAsync(user.Email, subject, bodyFactory(code));
+            }
+
+            return code; // debug veya test için istersen loglayabilirsin
         }
 
         public async Task<bool> ValidateAsync(int userId, CodePurpose purpose, string code)
@@ -88,6 +100,7 @@ namespace GeziRotasi.API.Services
             if (rec is null) return false;
 
             var ok = string.Equals(rec.Code, hash, StringComparison.Ordinal);
+
             if (ok)
             {
                 rec.Used = true;

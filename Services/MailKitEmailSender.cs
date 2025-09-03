@@ -11,7 +11,7 @@ public class MailKitEmailSender : IEmailSender
     private readonly IConfiguration _cfg;
     public MailKitEmailSender(IConfiguration cfg) => _cfg = cfg;
 
-    public async Task SendAsync(string toEmail, string subject, string htmlBody, CancellationToken ct = default)
+    public async Task SendEmailAsync(string toEmail, string subject, string htmlBody, CancellationToken ct = default)
     {
         // appsettings.json: "Email": { ... } bölümünden oku
         var host = _cfg["Email:SmtpHost"]!;                 // "smtp.gmail.com"
