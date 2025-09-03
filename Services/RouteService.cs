@@ -173,7 +173,6 @@ namespace GeziRotasi.API.Services
                     .OrderByDescending(r => r.CreatedAt)
                     .Select(r => new PastRouteDto
                     {
-                        Id = r.Id,
                         StartLocation = r.StartLocation,
                         EndLocation = r.EndLocation,
                         Distance = r.Distance,
