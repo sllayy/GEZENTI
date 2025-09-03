@@ -57,8 +57,7 @@ namespace GeziRotasi.API.Services
             if (!string.IsNullOrWhiteSpace(sortBy))
             {
                 bool isDescending = sortDirection?.Equals("desc", StringComparison.OrdinalIgnoreCase) ?? false;
-                
-                // Popülerlik sıralaması için eklenen kısım
+
                 switch (sortBy.ToLower())
                 {
                     case "name":
@@ -68,8 +67,10 @@ namespace GeziRotasi.API.Services
                         query = isDescending ? query.OrderByDescending(p => p.Category) : query.OrderBy(p => p.Category);
                         break;
                     case "populer":
-                        // Yorum sayısına göre sıralama yapıyoruz.
-                        query = isDescending ? query.OrderByDescending(p => p.Reviews.Count) : query.OrderBy(p => p.Reviews.Count);
+                        // Null güvenliği eklendi ✅
+                        query = isDescending
+                            ? query.OrderByDescending(p => (int?)(p.Reviews != null ? p.Reviews.Count() : 0) ?? 0)
+                            : query.OrderBy(p => (int?)(p.Reviews != null ? p.Reviews.Count() : 0) ?? 0);
                         break;
                     default:
                         query = query.OrderBy(p => p.Name);
@@ -110,7 +111,7 @@ namespace GeziRotasi.API.Services
                 poiToUpdate.Description = updatedPoi.Description;
                 poiToUpdate.Latitude = updatedPoi.Latitude;
                 poiToUpdate.Longitude = updatedPoi.Longitude;
-                poiToUpdate.Category = updatedPoi.Category; // ✅ enum
+                poiToUpdate.Category = updatedPoi.Category;
                 poiToUpdate.OpeningHours = updatedPoi.OpeningHours;
                 poiToUpdate.Website = updatedPoi.Website;
                 poiToUpdate.PhoneNumber = updatedPoi.PhoneNumber;
@@ -129,8 +130,7 @@ namespace GeziRotasi.API.Services
                 _context.Pois.Remove(poiToDelete);
                 await _context.SaveChangesAsync();
             }
-            
-            // Eğer POI silinirse, ilgili çalışma saatlerini ve özel gün saatlerini de sil
+
             var workingHours = await _context.WorkingHours.Where(wh => wh.PoiId == id).ToListAsync();
             _context.WorkingHours.RemoveRange(workingHours);
 
@@ -157,7 +157,7 @@ namespace GeziRotasi.API.Services
                 Description = "OpenStreetMap üzerinden eklendi.",
                 Latitude = osmElement.Lat,
                 Longitude = osmElement.Lon,
-                Category = poiCategory, // ✅ enum
+                Category = poiCategory,
                 ExternalApiId = osmElement.Id.ToString(),
                 OpeningHours = osmElement.Tags.GetValueOrDefault("opening_hours"),
                 Website = osmElement.Tags.GetValueOrDefault("website"),
@@ -208,7 +208,7 @@ namespace GeziRotasi.API.Services
                     { "id", poi.Id },
                     { "name", poi.Name },
                     { "description", poi.Description },
-                    { "category", poi.Category.ToString() }, // ✅ enum → string
+                    { "category", poi.Category.ToString() },
                     { "imageUrl", poi.ImageUrl }
                 };
                 features.Add(new Feature(point, attributes));

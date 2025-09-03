@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import FilterSidebar from '../components/Route/FilterSidebar';
 import RouteCard from '../components/Route/RouteCard';
+import { filterRoutes } from '../services/RouteFilterService';   // ✅ backend servisini çağırıyoruz
 import 'primereact/resources/themes/lara-light-blue/theme.css';
 import 'primereact/resources/primereact.min.css';
 import 'primeicons/primeicons.css';
+
 
 // 1. Her rota nesnesinden 'difficulty' özelliği kaldırıldı.
 const allRoutes = [
@@ -24,26 +26,26 @@ const RoutesPage = () => {
         distanceValue: 50
     });
     const [filteredRoutes, setFilteredRoutes] = useState(allRoutes);
+    const [loading, setLoading] = useState(false);
+
 
     const handleFilterChange = (filterName, value) => {
         setFilters(prevFilters => ({ ...prevFilters, [filterName]: value }));
     };
 
-    const handleApplyFilters = () => {
-        let tempRoutes = [...allRoutes];
-
-        tempRoutes = tempRoutes.filter(route =>
-            // Minimum rating
-            route.rating >= filters.ratingValue &&
-            // Maksimum distance
-            route.distance <= filters.distanceValue &&
-            // Kategori filtresi (diziye göre)
-            (!filters.selectedCategory.length || filters.selectedCategory.includes(route.category)) &&
-            // Süre filtresi
-            (!filters.selectedDuration || route.durationCategory === filters.selectedDuration)
-        );
-
-        setFilteredRoutes(tempRoutes);
+    // filtre uygula → backend'e gönder
+    const handleApplyFilters = async () => {
+        setLoading(true);
+        try {
+            const response = await filterRoutes(filters);   // ✅ backend’e istek
+            console.log("Backend'den gelen rotalar:", response);
+            setFilteredRoutes(response || []);
+        } catch (error) {
+            console.error("Filtreleme hatası:", error);
+            setFilteredRoutes([]);
+        } finally {
+            setLoading(false);
+        }
     };
 
 
