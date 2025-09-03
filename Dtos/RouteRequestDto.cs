@@ -49,5 +49,8 @@ namespace GeziRotasi.API.Dtos
         /// Örn: 300 = 5 saat
         /// </summary>
         public int TotalAvailableMinutes { get; set; } = 0;
+
+        public UserPreferencesDto? Preferences { get; set; }
+
     }
 }

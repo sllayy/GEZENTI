@@ -88,19 +88,29 @@ const RouteBuilderPage = () => {
 
             // --- Rota isteği ---
             const payload = {
-                
-                mode: transportType === 'walking' ? 'foot' : 'driving',
-                coordinates: [startCoords, endCoords],
-                optimizeOrder: shortestRoute,
-                returnToStart: false,
-                alternatives: 0,
-                geoJson: true,
-                snapToNetwork: true,
-                preference: shortestRoute ? 'shortest' : 'fastest',
+            mode: transportType === 'walking' ? 'foot' : 'driving',
+            coordinates: [startCoords, endCoords],
+            optimizeOrder: shortestRoute,
+            returnToStart: false,
+            alternatives: 0,
+            geoJson: true,
+            minStartTimeHour: timeRange[0],
+            maxEndTimeHour: timeRange[1],
+            totalAvailableMinutes: (timeRange[1] - timeRange[0]) * 60,
+            preferences: {   // 🔥 eksikti, backend null görünce patlıyordu
+                crowdednessPreference: crowdPreference,
+                maxWalkDistance,
+                preferredThemes: selectedCategories,
+                preferredTransportationMode: transportType,
                 minStartTimeHour: timeRange[0],
                 maxEndTimeHour: timeRange[1],
-                totalAvailableMinutes: (timeRange[1] - timeRange[0]) * 60
+                minPoiRating,
+                considerTraffic,
+                prioritizeShortestRoute: shortestRoute,
+                accessibilityFriendly: false
+            }
             };
+
 
             const response = await routeAPI.optimize(payload);
             setRouteData(response);

@@ -1,4 +1,4 @@
-#nullable enable
+﻿#nullable enable
 using System.Globalization;
 using System.Text.Json;
 using GeziRotasi.API.Data;
@@ -49,7 +49,13 @@ namespace GeziRotasi.API.Services
 
                     var nowHour = DateTime.Now.Hour;
                     if (nowHour < prefs.MinStartTimeHour || nowHour > prefs.MaxEndTimeHour)
-                        throw new InvalidOperationException("Seçilen saat kullanıcı tercihlerine uymuyor.");
+                    {
+                        _logger.LogWarning(
+                            "⏱ Şu an ({Now}) kullanıcı tercih aralığı ({Min}-{Max}) dışında, rota yine de oluşturulacak.",
+                            nowHour, prefs.MinStartTimeHour, prefs.MaxEndTimeHour
+                        );
+                        // ❌ throw kaldırıldı → sadece log at
+                    }
 
                     if (prefs.ConsiderTraffic)
                         _logger.LogInformation("🚦 Trafik dikkate alınması istendi (OSRM native desteklemez).");
